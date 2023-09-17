@@ -1,0 +1,132 @@
+[
+    {
+        "user_one": "649994fe8358e1c011101e10",
+        "username_one": "Ярослав",
+        "surname_one": "Кочетов",
+        "user_two": "649afe18072da1f3568c0cd8",
+        "username_two": "Виктория",
+        "surname_two": "Селютина",
+        "lastmessage": "Какие люди?! Отлично:) У тебя?",
+        "messages": [
+            {
+                "senderId": "649994fe8358e1c011101e10",
+                "message": "Привет, как дела?"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "Какие люди?! Отлично:) У тебя?"
+            }
+        ] 
+    },
+    {
+        "user_one": "649994fe8358e1c011101e10",
+        "username_one": "Ярослав",
+        "surname_one": "Кочетов",
+        "user_two": "649afe18072da1f3568c0cd8",
+        "username_two": "Иван",
+        "surname_two": "Булатов",
+        "lastmessage": "безусловно пупсик мой",
+        "messages": [
+            {
+                "senderId": "649994fe8358e1c011101e10",
+                "message": "Это Иван Булатов, из ФУЛЛСТЕКА"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "Ля, кто пишет"
+            },
+            {
+                "senderId": "649afe18072d1f3568c0cd8",
+                "message": "Что делаешь?"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "ниче, сижу"
+            },
+            {
+                "senderId": "649afe18072a1f3568c0cd8",
+                "message": "круто"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "безусловно пупсик мой"
+            }
+        ] 
+    },
+    {
+        "user_one": "649994fe8358e1c011101e10",
+        "username_one": "Ярослав",
+        "surname_one": "Кочетов",
+        "user_two": "649afe18072da1f3568c0cd8",
+        "username_two": "Сергей",
+        "surname_two": "Олегович",
+        "lastmessage": "Какие люди?! Отлично:) У тебя?",
+        "messages": [
+            {
+                "senderId": "649994fe8358e1c011101e10",
+                "message": "Привет, как дела?"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "Какие люди?! Отлично:) У тебя?"
+            }
+        ] 
+    },
+    {
+        "user_one": "649994fe8358e1c011101e10",
+        "username_one": "Ярослав",
+        "surname_one": "Кочетов",
+        "user_two": "649afe18072da1f3568c0cd8",
+        "username_two": "Анастасия",
+        "surname_two": "Почивалова",
+        "lastmessage": "Какие люди?! Отлично:) У тебя?",
+        "messages": [
+            {
+                "senderId": "649994fe8358e1c011101e10",
+                "message": "Привет, как дела?"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "Какие люди?! Отлично:) У тебя?"
+            }
+        ] 
+    },
+    {
+        "user_one": "649994fe8358e1d011101e10",
+        "username_one": "Ярослав",
+        "surname_one": "Кочетов",
+        "user_two": "649994fe8358e1c011101e10",
+        "username_two": "Виктория",
+        "surname_two": "Аксенова",
+        "lastmessage": "Какие люди?! Отлично:) У тебя?",
+        "messages": [
+            {
+                "senderId": "649994fe8358e1c011101e10",
+                "message": "Привет, как дела?"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "Какие люди?! Отлично:) У тебя?"
+            }
+        ] 
+    },
+    {
+        "user_one": "649994fe8358e1c011101e10",
+        "username_one": "Ярослав",
+        "surname_one": "Кочетов",
+        "user_two": "649afe18072da1f3568c0cd8",
+        "username_two": "Надежда",
+        "surname_two": "Бызова",
+        "lastmessage": "Какие люди?! Отлично:) У тебя?",
+        "messages": [
+            {
+                "senderId": "649994fe8358e1c011101e10",
+                "message": "Привет, как дела?"
+            },
+            {
+                "senderId": "649afe18072da1f3568c0cd8",
+                "message": "Какие люди?! Отлично:) У тебя?"
+            }
+        ] 
+    }
+]
