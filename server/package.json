@@ -1,0 +1,46 @@
+{
+  "name": "project",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "nodemon index.js",
+    "start-both": "concurrently \"npm run dev\" \"npm start\""
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "concurrently": "^8.2.1",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.8",
+    "escape-string-regexp": "^5.0.0",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.3.0",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.9.4",
+    "nodemon": "^2.0.22",
+    "npm-git-install": "^0.3.0",
+    "passport": "^0.6.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "session-file-store": "^1.5.0",
+    "socket.io": "^4.7.1",
+    "socket.io-client": "^4.7.1",
+    "vue": "^3.3.2",
+    "vue-cookies": "^1.8.3",
+    "vue-device-detector": "^1.1.6",
+    "vue-router": "^4.2.2",
+    "vue-socket.io": "^3.0.10",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.3.5"
+  }
+}

@@ -1,5 +1,4 @@
 let mongoose = require('mongoose');
-
 let dialogSchema = new mongoose.Schema({
     user_one: {
         type: String,
