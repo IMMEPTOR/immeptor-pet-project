@@ -24,6 +24,11 @@ export default {
                     name: 'fe'
                 })
             }
+        },
+        goToSettingsChangeInfoAccount() {
+            this.$router.push({
+                name: 'settings'
+            })
         }
     }
 }
@@ -46,6 +51,9 @@ export default {
             </div>
         </div>
         <div class="container_ui_set">
+            <div @click="goToSettingsChangeInfoAccount()" class="ui_exit">
+                <img width="33" src="../../assets/img/settings.png" alt="иконка настройек">
+            </div>
             <div @click="deleredJWtTokenAuth()" class="ui_exit">
                 <img width="35" src="../../assets/img/exit.png" alt="">
             </div>
@@ -156,6 +164,6 @@ main {
 .container_ui_set {
     display: flex;
     width: 80%;
-    justify-content: end;
+    justify-content: space-between;
 }
 </style>

@@ -11,7 +11,9 @@ export default {
             newValue: null,
             title: 'Добро пожаловать!',
             description: `Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!`,
-            image: "http://localhost:5173/src/assets/img/news_post_for_web.jpg",
+            image: "../../src/assets/img/news_post_for_web.jpg",
+            update: false,
+            news: true
         }
     },
     mounted() {
@@ -37,9 +39,11 @@ export default {
                 this.newValue = newValue;
                 console.log(this.newValue)
 
-                this.title = 'Обновление Alpha 0.1v';
-                this.image = 'http://localhost:5173/src/assets/img/updates_web_product_image.jpg';
-                this.description = 'В данном обновлении появились базовые и стандартизированные функции.';
+                this.title = 'Обновление Alpha 0.2v';
+                this.image = '../../src/assets/img/updates_web_product_image.jpg';
+                this.description = 'Обновление опубликовано 16.10.2023. Были добавлены настройки и оптимизированы внутренние системы продукта, а также исправлены баги.';
+                this.update = true;
+                this.news = false;
             }
         },
         goWentNews(newValue) {
@@ -48,8 +52,10 @@ export default {
                 console.log(this.newValue)
 
                 this.title = 'Добро пожаловать!';
-                this.image = 'http://localhost:5173/src/assets/img/news_post_for_web.jpg';
+                this.image = '../../src/assets/img/news_post_for_web.jpg';
                 this.description = 'Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!';
+                this.update = false;
+                this.news = true;
             }
         },
         goToRegistrationForm() {
@@ -231,21 +237,23 @@ main {
 
 .question {
     background: linear-gradient(90deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-	background-size: 400% 400%;
-	animation: gradient 10s ease infinite;
-	transform: translate3d(0, 0, 0);
+    background-size: 400% 400%;
+    animation: gradient 10s ease infinite;
+    transform: translate3d(0, 0, 0);
 }
 
 @keyframes gradient {
-	0% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-	100% {
-		background-position: 0% 50%;
-	}
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .qu_one {

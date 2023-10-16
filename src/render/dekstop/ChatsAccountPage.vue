@@ -234,7 +234,6 @@ export default {
         //     let socket = io('http://localhost:3005', {
         //         transports: ['websocket'],
         //     });
-
         //     if (!this.roomingUserSocket) {
         //         socket.emit('joinRoom', this.TakeDialog._id)
         //         this.roomingUserSocket = this.TakeDialog._id

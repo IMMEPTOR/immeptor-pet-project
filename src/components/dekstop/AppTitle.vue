@@ -26,9 +26,9 @@ export default {
                 this.title = 'Панель управления'
             } else if (this.$route.path == '/admin/control/edited') {
                 this.title = 'Редактирование данных пользователя'
+            } else if (this.$route.path == '/settings') {
+                this.title = 'Настройки'
             }
-
-
         }
     }
 }

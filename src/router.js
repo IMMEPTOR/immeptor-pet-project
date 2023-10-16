@@ -8,6 +8,7 @@ import RegistrationPage from './views/AuthRegisterPage.vue'
 
 import FeedPanel from './views/AdminPanel.vue';
 import editPage from './views/EditAccountAdminInfoPanel.vue';
+import SettingsAccount from './views/SettingsAccount.vue'
 export default createRouter({
     // История переходов сохраняется
     history: createWebHistory(),
@@ -54,6 +55,19 @@ export default createRouter({
             path: '/profile',
             name: 'profile',
             component: ProfilePage,
+            beforeEnter(to, from, next) {
+                let token = document.cookie;
+                if (token) {
+                    next(true);
+                } else {
+                    next(false);
+                }
+            }
+        },
+        {
+            path: '/settings',
+            name: 'settings',
+            component: SettingsAccount,
             beforeEnter(to, from, next) {
                 let token = document.cookie;
                 if (token) {

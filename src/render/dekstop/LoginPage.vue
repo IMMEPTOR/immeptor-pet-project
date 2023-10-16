@@ -27,8 +27,6 @@ export default {
 
             if (date.status == 401 || date.status == 365) {
                 this.loadExp = true;
-                console.log('еррорр');
-                console.log('Аккаунт заблокирован!')
             } else if (date.status == 398) {
                 this.error = true;
                 this.blocked = true;

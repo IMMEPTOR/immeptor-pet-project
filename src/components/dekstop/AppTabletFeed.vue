@@ -5,20 +5,23 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 export default {
     data() {
         return {
-
+            thisNews: true,
+            thisUpdate: false,
         }
     },
     props: {
         title: null,
         description: null,
         image: null,
+        update: null,
+        news: null
     },
     mounted() {
         this.clickTabletButton();
         this.$emit('valueChanged', 'true')
     },
     methods: {
-        clickedTablet() {
+        changeImageOnUpdate() {
 
         },
         clickTabletButton() {
@@ -31,6 +34,7 @@ export default {
                     news_button.classList.toggle('disabled');
                     up_button.classList.toggle('active');
                     up_button.classList.toggle('disabled');
+
                 }
             });
             up_button.addEventListener("click", function () {
@@ -39,7 +43,6 @@ export default {
                     news_button.classList.toggle('disabled');
                     up_button.classList.toggle('active');
                     up_button.classList.toggle('disabled');
-
                 }
             });
         },
@@ -48,12 +51,16 @@ export default {
             if (!up_button.classList.contains('active')) {
 
                 this.$emit('sendUpdate', 'update')
+                this.thisNews= false;
+                this.thisUpdate = true;
             }
         },
         clickNewsButton() {
             let news_button = document.getElementById('but_news');
             if (!news_button.classList.contains('active')) {
-                this.$emit('sendNews', 'news')
+                this.$emit('sendNews', 'news');
+                this.thisNews= true;
+                this.thisUpdate = false;
             }
         },
     }
@@ -72,8 +79,12 @@ export default {
                 </div>
             </div>
             <div class="container_image_element_and_text_description">
-                <p><span><img :src="image" alt="" class="image_posts_public"></span> <span id="title_post">{{ title
-                }}</span>{{ description }}</p>
+                <p><span>
+                        <img v-if="thisNews" src="../../assets/img/news_post_for_web.jpg" alt="" class="image_posts_public">
+                        <img v-if="thisUpdate" src="../../assets/img/updates_web_product_image.jpg" alt=""
+                            class="image_posts_public">
+                    </span> <span id="title_post">{{ title
+                    }}</span>{{ description }}</p>
             </div>
         </div>
     </div>

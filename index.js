@@ -1,9 +1,47 @@
+// let express = require('express');
+// let https = require('https');
+// let fs = require('fs');
 
+// let PORT = process.env.PORT || 8443;
+// let HOST = process.env.HOST || '';
+
+// let app = express();
+
+// app.use(express.json()); // Разбор тела запроса в формате JSON
+// app.use(express.urlencoded({ extended: true })); // Разбор тела запроса в формате x-www-form-urlencoded
+
+// if (process.env.NODE_ENV === 'development') {
+//     app.use((err, req, res, next) => {
+//         console.error(err.stack);
+//         res.status(500).send('Something broke!');
+//     });
+// }
+
+// // Обработка ошибок в режиме продакшн
+// if (process.env.NODE_ENV === 'production') {
+//     app.use((err, req, res, next) => {
+//         res.status(500).send('Something went wrong!');
+//     });
+// }
+
+// let options = {
+//     key: fs.readFileSync('certificates/private.key'),
+//     cert: fs.readFileSync('certificates/certificate.crt'),
+//     // key: fs.readFileSync('ssl/key.pem'),
+//     ca: fs.readFileSync('certificates/request.csr'),
+//     // cert: fs.readFileSync('ssl/cert.pem')
+// }
+
+// https.createServer(options, app).listen(PORT, HOST, null, function () {
+//     console.log('Server listening on port %d in %s mode', this.address().port, app.settings.env);
+// });
+// это HTTP сервер
 let express = require('express');
 let app = express();
 let http = require('http');
 let path = require('path');
-
+let fs = require('fs');
+// let debug = require('debug')('immeptor: server');
 let server = http.createServer(app);
 let bodyParser = require('body-parser')
 let cors = require('cors');
@@ -53,19 +91,19 @@ app.use('/api/position', positionRoutes);
 
 let keys = require('./config/keys')
 
-// остальные настройки \\
+// // остальные настройки \\
 
 
 
-// Настройка CORS
+// // Настройка CORS
 
 // app.use(cors({ origin: 'http://localhost:5173' }));
 
-// Настройка POST-запроса — JSON
+// // Настройка POST-запроса — JSON
 app.use(express.json())
 
 
-// Настройка Morgen
+// // Настройка Morgen
 let morgan = require('morgan');
 let { disconnect } = require('process');
 let { default: axios } = require('axios');
@@ -73,22 +111,22 @@ app.use(morgan('dev'));
 let transporter = require('./mailer');
 
 
-// io.on('connection', (socket) => {
-//     let chatId = socket.handshake.query.chatId;
-//     console.log('Новое подключение:', socket.id);
+io.on('connection', (socket) => {
+    let chatId = socket.handshake.query.chatId;
+    console.log('Новое подключение:', socket.id);
 
-//     socket.on('message', (data) => {
-//         console.log('Получено сообщение в чате:', data);
+    socket.on('message', (data) => {
+        console.log('Получено сообщение в чате:', data);
 
-//         io.in(chatId).emit('message', data);
-//     })
+        io.in(chatId).emit('message', data);
+    })
 
-//     socket.on('disconnect', () => {
-//         console.log('Подключение разорвано:', socket.id);
-//     })
+    socket.on('disconnect', () => {
+        console.log('Подключение разорвано:', socket.id);
+    })
 
-//     socket.join(chatId);
-// })
+    socket.join(chatId);
+})
 let activeSockets = new Set();
 
 function escapeRegExp(input) {
@@ -547,8 +585,8 @@ app.post('/api/information/administration/go/update/information/user', async fun
 
     // console.log(chats);
 
-    
-    
+
+
     user.name = Updateuser.name;
     user.surname = Updateuser.surname;
     user.email = Updateuser.email;
@@ -558,7 +596,7 @@ app.post('/api/information/administration/go/update/information/user', async fun
     user.fullusername = `${Updateuser.name} ${Updateuser.surname}`
 
     if (chats) {
-        
+
         for (let i = 0; i < chats.length; i++) {
             let chat = chats[i];
             console.log(chat)
@@ -566,7 +604,7 @@ app.post('/api/information/administration/go/update/information/user', async fun
                 chat.username_one = Updateuser.name;
                 chat.surname_one = Updateuser.surname;
             }
-            
+
             if (chat.user_two == user._id) {
                 chat.username_two = Updateuser.name;
                 chat.surname_two = Updateuser.surname;
@@ -764,3 +802,101 @@ app.post('/api/telegram/assistant/routesset/auth/user/insys/item', async functio
 //     emitter.emit('newMessage', message)
 //     res.status(200)
 // }))
+
+app.post('/api/change/person/information/utrp/cp/do', async function(req, res){
+    let name = req.body.name;
+    let surname = req.body.surname;
+    let userId = req.body.idUser;
+
+    let user = await User.findOne({_id: userId});
+
+    let chats = await Dialog.find({
+        $expr: {
+            $or: [
+                { $eq: ["$user_one", userId] },
+                { $eq: ["$user_two", userId] }
+            ]
+        }
+    });  
+
+    if (chats) {
+
+        for (let i = 0; i < chats.length; i++) {
+            let chat = chats[i];
+            console.log("Изменяем имена в чатах")
+            if (chat.user_one == user._id) {
+                chat.username_one = name;
+                chat.surname_one = surname;
+
+            }
+
+            if (chat.user_two == user._id) {
+                chat.username_two = name;
+                chat.surname_two = surname;
+            }
+            await chat.save();
+        }
+    }
+
+    if (user) {
+        user.name = name;
+        user.surname = surname;
+        user.fullusername = `${name} ${surname}`
+
+        try {
+            await user.save();
+            res.status(200).json({status: 465});
+        } catch (e) {
+            console.log(e);
+        }
+    } else {
+        console.log('user dont search')
+    }
+})
+
+app.post('/api/send/info/change/email/configeration/person/info', async function(req, res) {
+    let email = req.body.email;
+    let id = req.body.id;
+    let user = await User.findOne({_id: id});
+
+    if (user) {
+        user.email = email;
+        await user.save();
+
+        res.send({status: 3802});
+    } else {
+        console.log("Пользователь не найден")
+    }
+})
+
+app.post('/api/send/change/password/user', async function(req, res) {
+    let id = req.body.id;
+    let password = req.body.password;
+    
+    let user = await User.findOne({_id: id});
+    if (user) {
+        console.log("Пользователь нашелся!")
+        let salt = bcrypt.genSaltSync(10);
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let userId = '';
+        let charactersLength = characters.length;
+
+        for (let i = 0; i < 10; i++) {
+            let randomIndex = Math.floor(Math.random() * charactersLength);
+            userId += characters.charAt(randomIndex);
+        }
+
+        user.password = bcrypt.hashSync(password, salt);
+
+        try {
+            await user.save();
+            console.log("Пароль был сохранен!")
+            res.send({status: 38293});
+        } catch (e) {
+            // Обработать ошибку
+            errorHandler(res, e)
+        }
+    } else {
+        console.log("Пользователь не найден")
+    }
+})
