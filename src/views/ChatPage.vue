@@ -34,19 +34,7 @@ export default {
         } else {
             // console.log('пк')
         }
-        
-        window.addEventListener('beforeunload', (event) => {
-            let serverTime = dayjs().utc();
-            socket.emit('user-disconnect-exit', {
-                id: document.cookie,
-                time: serverTime,
-            })
-            socket.disconnect();
-        });
     },
-    beforeDestroy() {
-        // Отключение от сервера сокетов при уничтожении компонента
-    }
 }
 </script>
 

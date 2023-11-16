@@ -131,8 +131,7 @@ function escapeRegExp(input) {
 let containerUserConected = 0;
 let networkAdminsNowCount = 0;
 let controllerAuth = require('./controllers/auth');
-let dayjs = require('dayjs');
-let utc = require('dayjs/plugin/utc')
+let dayjs = require('dayjs')('dayjs/plugin/utc');
 let countConnectedAdmins = controllerAuth.countAuth;
 
 let containerSocketAdmin = [];
@@ -173,7 +172,7 @@ io.on('connection', (socket) => {
 
         console.log(decoded)
 
-        let user = await User.findOne({ email: decoded.email });
+        let user = await User.findOne({ _id: decoded.userId });
 
         // let user = await User.findOne({_id: room.key.userId});
         if (user && user.countEventProccess > 0) {
@@ -213,7 +212,7 @@ io.on('connection', (socket) => {
 
         console.log(decoded)
 
-        let user = await User.findOne({ email: decoded.email });
+        let user = await User.findOne({ _id: decoded.userId });
         let time = room.time;
 
         // let user = await User.findOne({_id: room.key.userId});
@@ -280,7 +279,7 @@ io.on('connection', (socket) => {
 
         console.log(decoded)
 
-        let user = await User.findOne({ email: decoded.email });
+        let user = await User.findOne({ _id: decoded.userId });
         let time = room.time;
 
         if (user) {
@@ -497,11 +496,55 @@ io.on('connection', (socket) => {
         socket.leave(room);
         console.log(`${socket.id} left room: ${room}`)
     })
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (data) => {
         // Используйте userId при отключении
-        // console.log(`Пользователь ${userId} отключился`);/
-        removeDisconnectedSocket(socket.id);
+        // console.log(`Пользователь ${data} отключился`);
+        // removeDisconnectedSocket(socket.id);
     });
+
+    socket.on('disconnecting', async (data) => {
+        let userId = socket.handshake.headers.cookie; // вся соль здесь
+        let ServerTime = socket.handshake.query.time;
+        // console.log(`Пользователь ${did} нас покинул`);
+
+        let secretKey = 'dev_jwt';
+        let decoded = '';
+        let tokenWithPrefix = userId;
+        
+        try {
+            let token = tokenWithPrefix.replace('Bearer ', '');
+            let tokening = token.replace('cookieName=', '');
+            decoded = jwt.verify(tokening, secretKey);
+        } catch (e) {
+            console.log(e);
+        }
+
+        console.log(decoded)
+
+        let user = await User.findOne({ _id: decoded.userId });
+
+        // let user = await User.findOne({_id: room.key.userId});
+        if (user) {
+            if (user.countEventProccess > 0) {
+                user.countEventProccess -= 1;
+                if (user.countEventProccess == 0) {
+                    let time = ServerTime;
+                    let roomStatus = user._id + '_status';
+                    user.lastTime = time;
+                    user.statusOnline = 0;
+    
+                    io.to(`${roomStatus}`).emit(`status_online_${user._id}`, {
+                        status: user.statusOnline,
+                        time: user.lastTime,
+                    });
+                }
+                await user.save();
+            }
+        } else {
+            console.log("Пучек выпал далеко")
+        }
+    });
+
 });
 
 let addConnectedSocket = (socket) => {

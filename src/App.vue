@@ -46,6 +46,11 @@ export default {
   // },
   created() {
     socket.connect();
+    socket.on('disconnect', () => {
+      // Отправка куки на сервер при отключении
+      let id = "82813sdf3234";
+      socket.emit('disconnecting');
+    });
     setInterval(() => {
       if (document.cookie && this.keyYesCookie == 0) {
         let serverTime = dayjs().utc();

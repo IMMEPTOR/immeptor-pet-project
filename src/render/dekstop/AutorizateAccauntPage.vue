@@ -38,14 +38,6 @@ export default {
     },
     mounted() {
         this.perfAuth();
-        // window.addEventListener('beforeunload', (event) => {
-        //     let serverTime = dayjs().utc();
-        //     socket.emit('user-disconnect-exit', {
-        //         id: document.cookie,
-        //         time: serverTime,
-        //     })
-        //     socket.disconnect();
-        // });
     },
     methods: {
         goToVoinForm() {

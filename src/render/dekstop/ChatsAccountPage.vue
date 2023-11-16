@@ -104,14 +104,6 @@ export default {
             }
         })
         this.getDialogs();
-
-        
-
-
-        // this.socket.on(`backclosesocketconnection_${this.token.userId}`, (data) => {
-
-        // })
-
     },
     methods: {
         async perfAuth() {
