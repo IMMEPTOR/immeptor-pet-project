@@ -1,5 +1,7 @@
 <script>
 import axios from 'axios';
+import dayjs from 'dayjs'
+import socket from '../../socket'
 
 export default {
     data() {
@@ -18,18 +20,28 @@ export default {
     methods: {
         async showsChat(index) {
             let chat = this.chats[index];
-
             let response = await axios.post('/api/takingproogds/setpol/dialogs/retate/user', {
                 id: chat._id,
             });
-
             let dialog = response.data;
+            let senderId = null;
+            if (dialog.user_one == this.token.userId) {
+                senderId = dialog.user_two;
+            } else if (dialog.user_two == this.token.userId) {
+                senderId = dialog.user_one;
+            }
+            console.log(senderId);
             this.$emit('sendingDialogs', dialog);
             this.$emit('valueChanged', 'true')
+            this.$emit('statusEventPerson', senderId)
         },
-        // sendDialog(index) {
-        //     this.$emit('valueChanged', 'true')
-        // }
+        convertToUserTime(createdAt) {
+            if (createdAt) {
+                const serverTime = dayjs(createdAt);
+                const userTime = serverTime.tz(this.userTimezone);
+                return userTime.format('HH:mm');
+            }
+        },
     }
 }
 </script>
@@ -54,9 +66,9 @@ export default {
                     </div>
                     <div class="infoMessageChatUser">
                         <p>{{ item.lastmessage }}</p>
+                        <p class="timestamp_chat">{{ convertToUserTime(item.lastTime) }}</p>
                     </div>
                 </div>
-                <!-- <div></div> -->
             </div>
             <hr>
         </div>
@@ -111,10 +123,10 @@ export default {
 .chatImageAvatar img {
     position: relative;
     top: 2px;
-    width: 40px;
+    width: 55px;
     height: 55px;
     /* object-fit: cover; */
-    border-radius: 10%;
+    border-radius: 20%;
 }
 
 .containerInformationChatUser {
@@ -129,9 +141,11 @@ export default {
 hr {
     /* position: relative;
     bottom: 4px; */
-    border: none; /* Убираем границу для браузера Firefox */
+    border: none;
+    /* Убираем границу для браузера Firefox */
     /* color: rgb(70, 70, 70); Цвет линии для остальных браузеров */
-    background-color: #da9191;/* Цвет линии для браузера Firefox и Opera */
+    background-color: #da9191;
+    /* Цвет линии для браузера Firefox и Opera */
     height: 0.1px;
     margin: 0;
 }
@@ -153,19 +167,33 @@ hr {
 .infoMessageChatUser {
     font-size: 14.5px;
     font-family: 'Quicksand', sans-serif;
+    display: flex;
+
+    width: 100%;
 }
 
 .infoMessageChatUser p {
     margin: 0;
+
 }
 
 .ChatContainerFeed:hover {
     background: rgba(255, 0, 0, 0.17);
-    box-shadow: inset 15px 9px 54px 1px rgba(0, 0, 0, 0.25);   
+    box-shadow: inset 15px 9px 54px 1px rgba(0, 0, 0, 0.25);
     cursor: pointer;
 }
 
 .ChatContainerFeed {
     transition: all 0.2s;
+    position: relative;
+}
+
+.timestamp_chat {
+    color: rgb(155, 133, 133);
+    font-size: 13px;
+    font-family: 'Quicksand', sans-serif;
+
+    position: absolute;
+    right: 10px;
 }
 </style>

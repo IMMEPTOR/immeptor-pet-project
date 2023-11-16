@@ -39,7 +39,23 @@ let userSchema = new mongoose.Schema({
     idSet: {
         type: String,
         required: true
-    }
+    },
+    lastTime: {
+        type: String,
+        // required: true
+    },
+    timezone: {
+        type: String,
+        // required: true
+    },
+    statusOnline: {
+        type: Number,
+        // required: true
+    },
+    countEventProccess: {
+        type: Number,
+        // required: true
+    },
 })
 
 module.exports = mongoose.model('users', userSchema)

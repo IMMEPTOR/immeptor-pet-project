@@ -48,16 +48,11 @@ let cors = require('cors');
 app.use(cors());
 let passport = require('passport');
 let { Server } = require('socket.io');
-
+let url = require('url')
 let port = 3010;
 
 let events = require('events');
 let emitter = new events.EventEmitter();
-
-
-
-
-
 
 let io = new Server(server, {
     transport: ['websocket'],
@@ -135,7 +130,9 @@ function escapeRegExp(input) {
 
 let containerUserConected = 0;
 let networkAdminsNowCount = 0;
-let controllerAuth = require('./controllers/auth')
+let controllerAuth = require('./controllers/auth');
+let dayjs = require('dayjs');
+let utc = require('dayjs/plugin/utc')
 let countConnectedAdmins = controllerAuth.countAuth;
 
 let containerSocketAdmin = [];
@@ -143,9 +140,175 @@ let containerSocketAdmin = [];
 io.on('connection', (socket) => {
     addConnectedSocket(socket);
 
+    socket.on('status_online', async (room) => {
+        console.log(room, "сокетики")
+
+        let roomStatus = room.id_sender + '_status';
+        socket.join(roomStatus);
+
+        let user = await User.findOne({ _id: room.id_sender });
+        if (user) {
+            io.to(`${roomStatus}`).emit(`status_online_${room.id_sender}`, {
+                status: user.statusOnline,
+                time: user.lastTime,
+            });
+        } else {
+            console.log('пользователь тестово не найден сотики');
+        }
+    })
+
+    socket.on('user-disconnect-exit', async (room) => {
+        console.log("Отключаемся нахуй с ним -", room)
+
+        let secretKey = 'dev_jwt';
+        let decoded = '';
+        let tokenWithPrefix = room.id;
+        try {
+            let token = tokenWithPrefix.replace('Bearer ', '');
+            let tokening = token.replace('cookieName=', '');
+            decoded = jwt.verify(tokening, secretKey);
+        } catch (e) {
+            console.log(e);
+        }
+
+        console.log(decoded)
+
+        let user = await User.findOne({ email: decoded.email });
+        let time = room.time;
+
+        // let user = await User.findOne({_id: room.key.userId});
+        if (user && user.countEventProccess > 0) {
+            user.countEventProccess -= 1;
+            if (user.countEventProccess == 0) {
+                let time = room.time;
+                let roomStatus = user._id + '_status';
+                user.lastTime = time;
+                user.statusOnline = 0;
+
+                io.to(`${roomStatus}`).emit(`status_online_${user._id}`, {
+                    status: user.statusOnline,
+                    time: user.lastTime,
+                });
+            }
+
+
+            await user.save();
+        } else {
+            console.log("Пучек выпал далеко")
+        }
+    })
+
+    socket.on('user-delete-status-exit', async (room) => {
+        console.log("Отключаемся нахуй с ним -", room)
+
+        let secretKey = 'dev_jwt';
+        let decoded = '';
+        let tokenWithPrefix = room.id;
+        try {
+            let token = tokenWithPrefix.replace('Bearer ', '');
+            let tokening = token.replace('cookieName=', '');
+            decoded = jwt.verify(tokening, secretKey);
+        } catch (e) {
+            console.log(e);
+        }
+
+        console.log(decoded)
+
+        let user = await User.findOne({ email: decoded.email });
+        let time = room.time;
+
+        // let user = await User.findOne({_id: room.key.userId});
+        if (user) {
+            user.countEventProccess = 0;
+            if (user.countEventProccess == 0) {
+                let time = room.time;
+                let roomStatus = user._id + '_status';
+                user.lastTime = time;
+                user.statusOnline = 0;
+
+                io.to(`${roomStatus}`).emit(`status_online_${user._id}`, {
+                    status: user.statusOnline,
+                    time: user.lastTime,
+                });
+            }
+
+
+            await user.save();
+        } else {
+            console.log("Пучек выпал далеко")
+        }
+    })
+
+
+
+    socket.on('user-disconnecting', async (room) => {
+        console.log("Отключаемся нахуй с ним -", room)
+
+        let user = await User.findOne({ _id: room.key.userId });
+        if (user) {
+            user.countEventProccess -= 1;
+            if (user.countEventProccess == 0) {
+                let time = room.time;
+                let roomStatus = room.key.userId + '_status';
+                user.lastTime = time;
+                user.statusOnline = 0;
+
+                io.to(`${roomStatus}`).emit(`status_online_${room.key.userId}`, {
+                    status: user.statusOnline,
+                    time: user.lastTime,
+                });
+            }
+
+
+            await user.save();
+        } else {
+            console.log("Пучек выпал далеко")
+        }
+    })
+
+    socket.on('roomStatusEvent', async (room) => {
+
+        let secretKey = 'dev_jwt';
+        let decoded = '';
+        let tokenWithPrefix = room.id;
+        try {
+            let token = tokenWithPrefix.replace('Bearer ', '');
+            let tokening = token.replace('cookieName=', '');
+            decoded = jwt.verify(tokening, secretKey);
+        } catch (e) {
+            console.log(e);
+        }
+
+        console.log(decoded)
+
+        let user = await User.findOne({ email: decoded.email });
+        let time = room.time;
+
+        if (user) {
+            console.log("Пользователь найден")
+            user.statusOnline = 1;
+            user.lastTime = time;
+
+            if (!user.countEventProccess) {
+                user.countEventProccess = 0;
+            }
+            user.countEventProccess += 1;
+            if (user.countEventProccess == 1) {
+                let roomStatus = user._id + '_status';
+                io.to(`${roomStatus}`).emit(`status_online_${user._id}`, {
+                    status: user.statusOnline,
+                    time: user.lastTime,
+                });
+            }
+            await user.save();
+        } else {
+            console.log("Пользователь не найден в сокетах для статусов")
+        }
+
+    })
+
     socket.on('feedRoom', (room) => {
         socket.join('feedRoomlastMes');
-        console.log(socket.rooms);
 
         let roomsearchAdmin = socket.id + '_f_pers';
         console.log(roomsearchAdmin, 'Пользователь был подключен к комнате для работы с запросами поиска людей')
@@ -208,8 +371,12 @@ io.on('connection', (socket) => {
     })
 
     socket.on('leaveAdminsRoom', (room) => {
+        networkAdminsNowCount -= 1;
         socket.leave('AdminRoom');
         console.log('Пользователь!')
+        io.to('AdminRoom').emit('AdminUpdateInfoOnlineAdministration', {
+            adminsConnect: networkAdminsNowCount
+        })
     })
 
     socket.on('joinRoom', (room) => {
@@ -237,52 +404,47 @@ io.on('connection', (socket) => {
         let chatId = data.chatId;
         let userId = data.userId;
         let message = data.message;
-
+        let timen = data.time;
         let chat = await Dialog.findOne({ _id: chatId });
+        // let user = await User.findOne({_id: userId})
+        // if (user) {
+        //     region = user.timezone;
+        // }
         if (chat) {
             chat.messages.push({
                 senderId: userId,
-                message: message
+                message: message,
+                time: timen,
             });
             let lastMes = message.slice(0, 18);
             if (message.length > 18) {
                 lastMes = lastMes + '...';
             }
-            // console.log(lastMes + '...');
-
             chat.lastmessage = lastMes;
-
-
-
+            chat.lastTime = timen;
             if (chat.set_mark == 1) {
                 chat.user_two = chat.time_two_user;
                 chat.set_mark = 0;
-
                 io.to('feedRoomlastMes').emit('foreverchatuserme', chat);
             }
-
             await chat.save();
-
             io.to(chatId).emit('newMessage', {
                 user: userId,
-                message: message
+                message: message,
+                time: timen,
             });
-
             io.to('feedRoomlastMes').emit('lastMessageSearch', {
                 chatId: chatId,
-                text: lastMes
+                text: lastMes,
+                lastTime: timen,
             });
-
-
         }
-
     })
 
     socket.on('updateinputchat', async (data) => {
+        console.log(data);
         let iUser = await User.findOne({ _id: data.idIUser.userId });
         console.log(data);
-
-
         let dontwentTemp = false;
         if (iUser._id == data.id) {
             dontwentTemp = true
@@ -291,48 +453,54 @@ io.on('connection', (socket) => {
                 $expr: {
                     $or: [
                         { $eq: ["$user_one", iUser._id] },
-                        { $eq: ["$user_two", iUser._id] }
+                        { $eq: ["$user_two", iUser._id] },
+                        { $eq: ["$time_two_user", iUser._id]}
                     ]
                 }
             });
-
             for (let i = 0; i < chats.length; i++) {
                 let chat = chats[i];
                 if (chat.user_one == data.id || chat.user_two == data.id || chat.time_two_user == data.id) {
                     dontwentTemp = true;
                 }
+                if ( chat.set_mark == 1 && chat.time_two_user == iUser._id) {
+                    chat.user_two = chat.time_two_user;
+                    dontwentTemp = true;
+                    
+                    console.log("Чат повторяется и не будет сохранен но будет отрендарен");
+                    io.to('feedRoomlastMes').emit('newdialogFromInputSecond', chat);
+                    chat.set_mark = 0;
+                    await chat.save();
+                }
             }
         }
-
-
         if (iUser && !dontwentTemp) {
             let dialog = new Dialog({
                 user_one: iUser._id,
                 username_one: iUser.name,
                 surname_one: iUser.surname,
-                user_two: ' ',
+                user_two: '',
                 username_two: data.name,
                 surname_two: data.surname,
                 time_two_user: data.id,
                 lastmessage: '',
                 set_mark: 1,
-                messages: []
+                messages: [],
+                lastTime: "",
             });
-
             await dialog.save();
             io.to('feedRoomlastMes').emit('sendnewdualoginput', dialog);
         } else {
             console.log('__Объект чата не создан при следущей проверку выше__');
         }
     })
-
     socket.on('leaveRoom', (room) => {
         socket.leave(room);
         console.log(`${socket.id} left room: ${room}`)
     })
-
-
     socket.on('disconnect', () => {
+        // Используйте userId при отключении
+        // console.log(`Пользователь ${userId} отключился`);/
         removeDisconnectedSocket(socket.id);
     });
 });
@@ -370,7 +538,6 @@ server.listen(port, () => {
 });
 
 // Настройка БД
-
 mongoose.connect(keys.mongoURI)
     .then(() => console.log('MongoDB conected.'))
     .catch(error => console.log(error))
@@ -478,6 +645,156 @@ app.post('/api/send/email/code', function (req, res) {
     });
     console.log(code);
 });
+
+app.post('/api/send/email/vhoin', async function (req, res) {
+    let email = req.body.email;
+    let timezone = req.body.zone;
+    let time = req.body.time;
+
+    let user = await User.findOne({ email: email });
+
+    let dateTimeFormat = new Intl.DateTimeFormat('ru-RU', { timeZone: timezone });
+
+    // Получите информацию о временной зоне с использованием resolvedOptions()
+    let timeZoneOptions = dateTimeFormat.resolvedOptions();
+
+    // Преобразуйте временную зону в требуемый формат
+    let formattedTimeZone = timeZoneOptions.timeZone.replace('/', ', ');
+
+
+
+    // let formattedDate = time.;
+
+    if (user) {
+        let mailOptions = {
+            from: 'immeptor@gmail.com',
+            to: `${email}`,
+            subject: 'Замечена новая активность',
+            html: `
+            <!DOCTYPE html>
+        <html>
+        <head>
+            <title>New Vhoin Account</title>
+            <style>
+            .name_company {
+                font-size: 20px;
+                font-family: 'Inter', sans-serif;
+                background-color: black;
+                color: white;
+                padding: 20px 0;
+                text-align: center;
+                border-radius: 0 0 10px 10px
+            }
+            body {
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        
+            .container {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+        
+            .container_information {
+                width: 100%;
+                height: auto;
+                text-align: center;
+            }
+        
+            .title_email {
+                text-align: center;
+                color: #000;
+                font-family: 'Kreon', sans-serif;
+                font-size: 30px;
+                font-style: normal;
+                font-weight: 600;
+                line-height: normal;
+            }
+        
+            .description_email {
+                text-align: center;
+                color: #000;
+                font-family: 'Kreon', sans-serif;
+                font-size: 22px;
+                font-style: normal;
+                font-weight: 550;
+                line-height: normal;
+            }
+        
+            .code_email_send_id {
+                text-align: center;
+                color: #EA8106;
+                font-family: 'Kreon', sans-serif;
+                font-size: 25px;
+                font-style: normal;
+                font-weight: 600;
+                line-height: normal;
+                letter-spacing: .5rem;
+            }
+        
+            .container_geolocation {
+                width: auto;
+                height: auto;
+        
+                text-align: center;
+                display: inline;
+                border-radius: 10px;
+                background-color: #000;
+                box-shadow: 1px 1px 16.1px -4px rgba(0, 0, 0, 0.25);
+            }
+        
+            .text_geoinfo {
+                color: #6167FF;
+                font-family: 'IBM Plex Sans', sans-serif;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+            }
+        
+            .container_data_geoinfo {
+                
+                color: #232323;
+                font-family: 'IBM Plex Sans', sans-serif;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+            }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <p class="name_company">IMMEPTOR</p>
+                <div class="container_information">
+                    <p class="title_email">Здравствуйте, ${user.name}!</p>
+                    <p class="description_email">В ваш аккаунт был произведен вход</p>
+                </div>
+                <div class="container_geolocation">
+                    <p class="text_geoinfo">Местоположение:</p>
+                    <p class="container_data_geoinfo">${formattedTimeZone}, ${time}</p>
+                </div>
+            </div>
+        </body>
+        </html>
+            `,
+            headers: {
+                'Content-Type': 'text/html'
+            }
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error(error);
+            } else {
+                console.log('Email send: ' + info.response);
+            }
+        });
+        res.send(200);
+    }
+})
 
 app.post('/api/getprofile', async function (req, res) {
     let secretKey = 'dev_jwt';
@@ -803,12 +1120,12 @@ app.post('/api/telegram/assistant/routesset/auth/user/insys/item', async functio
 //     res.status(200)
 // }))
 
-app.post('/api/change/person/information/utrp/cp/do', async function(req, res){
+app.post('/api/change/person/information/utrp/cp/do', async function (req, res) {
     let name = req.body.name;
     let surname = req.body.surname;
     let userId = req.body.idUser;
 
-    let user = await User.findOne({_id: userId});
+    let user = await User.findOne({ _id: userId });
 
     let chats = await Dialog.find({
         $expr: {
@@ -817,7 +1134,7 @@ app.post('/api/change/person/information/utrp/cp/do', async function(req, res){
                 { $eq: ["$user_two", userId] }
             ]
         }
-    });  
+    });
 
     if (chats) {
 
@@ -845,7 +1162,7 @@ app.post('/api/change/person/information/utrp/cp/do', async function(req, res){
 
         try {
             await user.save();
-            res.status(200).json({status: 465});
+            res.status(200).json({ status: 465 });
         } catch (e) {
             console.log(e);
         }
@@ -854,26 +1171,26 @@ app.post('/api/change/person/information/utrp/cp/do', async function(req, res){
     }
 })
 
-app.post('/api/send/info/change/email/configeration/person/info', async function(req, res) {
+app.post('/api/send/info/change/email/configeration/person/info', async function (req, res) {
     let email = req.body.email;
     let id = req.body.id;
-    let user = await User.findOne({_id: id});
+    let user = await User.findOne({ _id: id });
 
     if (user) {
         user.email = email;
         await user.save();
 
-        res.send({status: 3802});
+        res.send({ status: 3802 });
     } else {
         console.log("Пользователь не найден")
     }
 })
 
-app.post('/api/send/change/password/user', async function(req, res) {
+app.post('/api/send/change/password/user', async function (req, res) {
     let id = req.body.id;
     let password = req.body.password;
-    
-    let user = await User.findOne({_id: id});
+
+    let user = await User.findOne({ _id: id });
     if (user) {
         console.log("Пользователь нашелся!")
         let salt = bcrypt.genSaltSync(10);
@@ -891,7 +1208,7 @@ app.post('/api/send/change/password/user', async function(req, res) {
         try {
             await user.save();
             console.log("Пароль был сохранен!")
-            res.send({status: 38293});
+            res.send({ status: 38293 });
         } catch (e) {
             // Обработать ошибку
             errorHandler(res, e)

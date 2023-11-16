@@ -1,10 +1,22 @@
 <script>
-import axios from 'axios'
+import axios from 'axios';
+
+import socket from '../../socket'
+
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone'; 
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 export default {
-    date() {
+    data() {
         return {
 
         }
+    },
+    props: {
+        key: null,
     },
     methods: {
         goToChats() {

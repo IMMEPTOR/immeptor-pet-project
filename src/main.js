@@ -6,8 +6,12 @@ axios.defaults.baseURL = 'http://localhost:3010';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js'
 dayjs.locale('ru');
 dayjs.extend(relativeTime);
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 // Всё для vue
 import { createApp } from 'vue'

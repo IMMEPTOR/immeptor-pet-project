@@ -18,7 +18,6 @@ export default {
         }
     },
     mounted() {
-        // console.log(this.firstName);
     },
     methods: {
         async getNameUser() {
@@ -29,12 +28,6 @@ export default {
             let user = response.data;
             this.firstName = String(user.name);
             this.name = this.firstName
-            if (user) {
-                // console.log(this.name);
-            } else {
-                console.log('Ошибка вывода пользователя. Возможно не найден')
-            }
-
         }
     },
 

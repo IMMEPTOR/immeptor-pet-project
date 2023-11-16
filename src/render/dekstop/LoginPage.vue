@@ -1,5 +1,14 @@
 <script>
 import axios from "axios";
+import dayjs from "dayjs";
+import socket from '../../socket'
+
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 // import { application } from 'express';
 export default {
     data() {
@@ -20,11 +29,10 @@ export default {
 
             let response = await axios.post('/api/auth/login', {
                 email: this.email,
-                password: this.password
+                password: this.password,
+                tz: dayjs.tz.guess(),
             })
-
             let date = response.data;
-
             if (date.status == 401 || date.status == 365) {
                 this.loadExp = true;
             } else if (date.status == 398) {
@@ -43,18 +51,20 @@ export default {
                     evenNow = '';
                 }
                 document.cookie = 'cookieName=' + date.token + '; expires=' + evenNow + '; path=http://localhost:5173/;';
+                let timezone = dayjs.tz.guess();
+                let serverTime = dayjs().utc();
+                let userTime = serverTime.tz(timezone);
+                let formattedTime = userTime.format('DD.MM.YYYY HH:mm');
+                let response = await axios.post('api/send/email/vhoin', {
+                    email: this.email,
+                    zone: timezone,
+                    time: formattedTime,
+                });
+
                 this.$router.push({
                     name: 'feed'
                 })
             }
-
-            // if (token) {
-
-            // } else {
-            //     this.$router.push({
-            //         name: 'ops'
-            //     })
-            // }
         },
         CancelVoinInAccount() {
             this.email = '';

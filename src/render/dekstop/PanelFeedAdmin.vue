@@ -1,7 +1,7 @@
 <script>
 import AppFeedAdminPanelVue from '../../components/dekstop/AppFeedAdminPanel.vue';
 
-import { io } from 'socket.io-client';
+import socket from '../../socket'
 import axios from 'axios';
 
 export default {
@@ -10,9 +10,6 @@ export default {
     },
     data() {
         return {
-            socket: io('http://localhost:3010', {
-                transports: ['websocket'],
-            }),
             registerUser: null,
             connectUser: null,
             adminsConnect: null,
@@ -23,32 +20,38 @@ export default {
         }
     },
     unmounted() {
-        this.socket.emit('leaveAdminsRoom')
-        this.socket.disconnect();
+        socket.emit('leaveAdminsRoom')
     },
     mounted() {
         this.getProfile();
-        this.socket.connect();
-        this.socket.emit('AdminConnectRoom', document.cookie);
-        this.socket.on('AdminClubInformationRoomFeed', (data) => {
+        socket.emit('AdminConnectRoom', document.cookie);
+        socket.on('AdminClubInformationRoomFeed', (data) => {
             this.registerUser = data.register;
             this.connectUser = data.connectedUser;
             this.adminsConnect = data.AdminsConnected;
             this.token = data.token;
         })
 
-        this.socket.on('AdminUpdateInfoConnected', (data) => {
+        socket.on('AdminUpdateInfoConnected', (data) => {
             this.connectUser = data.connectedUser;
         })
 
-        this.socket.on('AdminUpdateInfoOnlineAdministration', (data) => {
+        socket.on('AdminUpdateInfoOnlineAdministration', (data) => {
             this.adminsConnect = data.adminsConnect;
         })
 
-        this.socket.on('SearchAdminUserInfo', (data) => {
+        socket.on('SearchAdminUserInfo', (data) => {
             this.usersSearch = data.users;
-            console.log(data)
         })
+
+        window.addEventListener('beforeunload', (event) => {
+            let serverTime = dayjs().utc();
+            socket.emit('user-disconnect-exit', {
+                id: document.cookie,
+                time: serverTime,
+            })
+            socket.disconnect();
+        });
     },
     methods: {
         goToExitOfAdminPage() {
@@ -66,7 +69,7 @@ export default {
             let text = this.text;
             text = text.trim();
             if (text) {
-                this.socket.emit('searchAdminUserPanelInfo', text)
+                socket.emit('searchAdminUserPanelInfo', text)
             } else if (!this.text) {
                 this.text == '';
                 this.usersSearch = null;

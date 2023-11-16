@@ -1,16 +1,28 @@
 <script>
+import axios from 'axios';
+import socket from '../../socket'
+import AppTabletFeed from '../../components/dekstop/AppTabletFeed.vue';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import AppMenuSideAccount from '../../components/dekstop/AppMenuSideAccaunt.vue'
 
-import axios from 'axios';
-
+dayjs.extend(utc);
+dayjs.extend(timezone);
 export default {
     components: {
         AppMenuSideAccount,
     },
-
-    date() {
+    data() {
         return {
-
+            element_button_table: null,
+            newValue: null,
+            title: 'Добро пожаловать!',
+            description: `Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!`,
+            image: "../../src/assets/img/news_post_for_web.jpg",
+            update: false,
+            news: true,
+            token: null,
         }
     },
     async beforeRouteEnter(to, fromR, next) {
@@ -18,13 +30,73 @@ export default {
         let response = await axios.post('/api/configuration/auth/examination/token/user', {
             token: token
         })
-
         if (response.status == 200) {
             next(true)
-
         } else {
             next(false)
         }
+    },
+    mounted() {
+        this.perfAuth();
+        window.addEventListener('beforeunload', (event) => {
+            let serverTime = dayjs().utc();
+            socket.emit('user-disconnect-exit', {
+                id: document.cookie,
+                time: serverTime,
+            })
+            socket.disconnect();
+        });
+    },
+    methods: {
+        goToVoinForm() {
+            this.$router.push({
+                name: 'voin'
+            })
+        },
+        goWentUpdate(newValue) {
+            if (newValue == 'update') {
+                this.newValue = newValue;
+                this.title = 'Обновление Alpha 0.2v';
+                this.image = '../../src/assets/img/updates_web_product_image.jpg';
+                this.description = 'Обновление опубликовано 16.10.2023. Были добавлены настройки и оптимизированы внутренние системы продукта, а также исправлены баги.';
+                this.update = true;
+                this.news = false;
+            }
+        },
+        goWentNews(newValue) {
+            if (newValue == 'news') {
+                this.newValue = newValue;
+                this.title = 'Добро пожаловать!';
+                this.image = '../../src/assets/img/news_post_for_web.jpg';
+                this.description = 'Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!';
+                this.update = false;
+                this.news = true;
+            }
+        },
+        goToRegistrationForm() {
+            this.$router.push({
+                name: 'registration'
+            })
+        },
+        async perfAuth() {
+            let token = document.cookie;
+            let response = await axios.post('/api/gettoken', {
+                token: token
+            })
+            if (response.data.status == 100) {
+                document.cookie = "cookieName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+                if (!document.cookie) {
+                    this.$router.push({
+                        name: 'fe'
+                    })
+                }
+            } else if (response.data.status == 105) {
+                this.token = response.data.decoded;
+                if (this.token.role >= 2) {
+                    this.admin = true;
+                }
+            }
+        },
     }
 }
 </script>
@@ -36,28 +108,8 @@ export default {
                 <div class="nameLogo">
                     <p>IMMEPTOR</p>
                 </div>
-                <!-- <div class="inputSearchHeader">
-                    <div class="element_inputHeaderSearch">
-                        <input placeholder="Найти человека" type="text">
-                    </div>
-                    <div class="containerPositionSearchUser">
-                        <div class="elemTakeUser">
-                            <ul>
-                                <li class="li_search">Ярослав Кочетов</li>
-                                <li class="li_search">Виктория Селютина</li>
-                                <li class="li_search">Надежда Бызова</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div> -->
             </div>
             <div class="button_ui_header_container">
-                <!-- <div class="button_ui_header">
-                    <p>Панель Управления</p>
-                </div> -->
-                <!-- <div class="button_ui_header">
-                    <p>Помощь</p>
-                </div> -->
             </div>
         </div>
     </header>
@@ -70,7 +122,6 @@ export default {
 </template>
 
 <style scoped>
-
 .feedHeaderCont {
     width: 100%;
     height: 55px;
@@ -195,6 +246,7 @@ main {
     height: 100vh;
     display: flex;
 }
+
 .container__image__auth {
     flex-grow: 1;
     display: flex;
@@ -219,5 +271,4 @@ main {
     -o-user-select: none;
     user-select: none;
 }
-
 </style>

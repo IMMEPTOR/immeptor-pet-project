@@ -27,6 +27,7 @@ export default {
             passwordFirst: null,
             inputPassword: null,
             checkPassword: null,
+            ObjSendId: null,
         }
     },
     components: {
@@ -64,14 +65,11 @@ export default {
             this.error_start_check_email = false;
             this.window_change_email_main = false;
             this.window_change_accepr_password = true;
-            // this.grafWind = true;
         },
         async CheckPassPersonOfEmail() {
             let pass = this.password;
             this.password = "";
             let element = document.querySelector(".message_window_error");
-            // let email = this.email;
-            // let pass = this.password;
             if (!pass.trim()) {
                 this.error_start_check_pass = true;
                 element.innerHTML = "Пустое поле";
@@ -83,11 +81,9 @@ export default {
                 let date = response.data;
                 if (date.status == 401) {
                     element.innerHTML = "Неверный пароль";
-                    console.log("Неверный пароль!")
                 } else if (date.token) {
                     this.window_change_accepr_password = false;
                     this.window_change_email_main = true;
-                    // element.innerHTML = "";
                 }
             }
         },
@@ -96,15 +92,15 @@ export default {
             element.innerHTML = "";
         },
         getEmailFromComponent(newValue) {
-            // let email = newValue;
             this.setEmail = newValue.email;
             this.id = newValue.id;
-            console.log(newValue);
+            this.ObjSendId = {
+                userId: newValue.id
+            }
         },
         async sendEmailChangeToLoadPersonInfo() {
             let element = document.querySelector(".message_error_window_email");
             function validateEmail(email) {
-                // Регулярное выражение для проверки валидности email
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailPattern.test(email);
             };
@@ -124,8 +120,7 @@ export default {
                 if (responce.data.code == 397) {
                     element.innerHTML = "Данная почта уже привзана к другому аккаунту";
                 } else if (responce.data.code == 398) {
-                    this.errorTextSend = ''
-                    console.log(this.chekTrue);
+                    this.errorTextSend = '';
                     this.window_change_email_main = false;
                     this.window_code_send = true;
                     function generateCode() {
@@ -185,7 +180,6 @@ export default {
                     email: this.setEmail,
                     password: pass,
                 })
-                console.log("Запрос отправлен!")
                 let date = response.data;
                 if (date.status == 401) {
                     element.innerHTML = "Указан неверный пароль от вашего аккаунта";
@@ -198,7 +192,6 @@ export default {
                         id: this.id,
                         password: this.inputPassword,
                     })
-
                     let data = respce.data;
                     if (data.status == 38293) {
                         this.windPass = false;
@@ -234,7 +227,7 @@ export default {
         </div>
     </header>
     <main>
-        <AppMenuSideAccaunt />
+        <AppMenuSideAccaunt :key="ObjSendId" />
         <div v-if="grafWind" class="container_settings_right">
             <!-- Компонент настроек -->
             <div class="container_settings">

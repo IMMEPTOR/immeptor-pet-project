@@ -3,12 +3,12 @@ let transporter = require('./mailer');
 let mailOptions = {
     from: 'immeptor@gmail.com',
     to: 'vvv643040@gmail.com',
-    subject: 'Подтверждение почты',
+    subject: 'Замечена новая активность',
     html: `
     <!DOCTYPE html>
 <html>
 <head>
-    <title>Confirmation Code</title>
+    <title>New Vhoin Account</title>
     <style>
     .name_company {
         font-size: 20px;
@@ -20,6 +20,7 @@ let mailOptions = {
         border-radius: 0 0 10px 10px
     }
     body {
+        text-align: center;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -27,7 +28,7 @@ let mailOptions = {
 
     .container {
         text-align: center;
-        
+        margin-bottom: 10px;
     }
 
     .container_information {
@@ -46,6 +47,16 @@ let mailOptions = {
         line-height: normal;
     }
 
+    .description_email {
+        text-align: center;
+        color: #000;
+        font-family: 'Kreon', sans-serif;
+        font-size: 22px;
+        font-style: normal;
+        font-weight: 550;
+        line-height: normal;
+    }
+
     .code_email_send_id {
         text-align: center;
         color: #EA8106;
@@ -56,14 +67,48 @@ let mailOptions = {
         line-height: normal;
         letter-spacing: .5rem;
     }
+
+    .container_geolocation {
+        width: auto;
+        height: auto;
+
+        text-align: center;
+        display: inline;
+        border-radius: 10px;
+        background-color: #000;
+        box-shadow: 1px 1px 16.1px -4px rgba(0, 0, 0, 0.25);
+    }
+
+    .text_geoinfo {
+        color: #6167FF;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+    }
+
+    .container_data_geoinfo {
+        
+        color: #232323;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+    }
     </style>
 </head>
 <body>
     <div class="container">
         <p class="name_company">IMMEPTOR</p>
         <div class="container_information">
-            <p class="title_email">Ваш код активации</p>
-            <p class="code_email_send_id">45602716</p>
+            <p class="title_email">Здравствуйте, Виктория!</p>
+            <p class="description_email">В ваш аккаунт был произведен вход</p>
+        </div>
+        <div class="container_geolocation">
+            <p class="text_geoinfo">Местоположение:</p>
+            <p class="container_data_geoinfo">Europa, Moscow, 19.11.2023 20:18</p>
         </div>
     </div>
 </body>

@@ -44,23 +44,36 @@ export default createRouter({
         {
             path: '/feed',
             name: 'feed',
-            component: AutorizateAccaunt
+            component: AutorizateAccaunt,
+            beforeEnter(to, from, next) {
+                if (document.cookie) {
+                    next(true);
+                } else {
+                    next('fe')
+                }
+            }
         },
         {
             path: '/chats',
             name: 'chats',
-            component: ChatsAccountPage
+            component: ChatsAccountPage,
+            beforeEnter(to, from, next) {
+                if (document.cookie) {
+                    next(true);
+                } else {
+                    next('/')
+                }
+            }
         },
         {
             path: '/profile',
             name: 'profile',
             component: ProfilePage,
             beforeEnter(to, from, next) {
-                let token = document.cookie;
-                if (token) {
+                if (document.cookie) {
                     next(true);
                 } else {
-                    next(false);
+                    next('fe')
                 }
             }
         },
@@ -69,11 +82,10 @@ export default createRouter({
             name: 'settings',
             component: SettingsAccount,
             beforeEnter(to, from, next) {
-                let token = document.cookie;
-                if (token) {
+                if (document.cookie) {
                     next(true);
                 } else {
-                    next(false);
+                    next('fe')
                 }
             }
         },
@@ -92,12 +104,26 @@ export default createRouter({
         {
             path: '/admin/aplication/control',
             name: 'feedPanel',
-            component: FeedPanel
+            component: FeedPanel,
+            beforeEnter(to, from, next) {
+                if (document.cookie) {
+                    next(true);
+                } else {
+                    next('fe')
+                }
+            }
         },
         {
             path: '/admin/control/edited',
             name: 'editDataUser',
-            component: editPage
+            component: editPage,
+            beforeEnter(to, from, next) {
+                if (document.cookie) {
+                    next(true);
+                } else {
+                    next('fe')
+                }
+            }
         },
     ]
 })

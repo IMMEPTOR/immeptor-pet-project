@@ -31,6 +31,9 @@ let dialogSchema = new mongoose.Schema({
     lastmessage: {
         type: String,
     },
+    lastTime: {
+        type: String,
+    },
     time_two_user: {
         type: String,
     },
@@ -43,6 +46,9 @@ let dialogSchema = new mongoose.Schema({
                 type: String
             },
             message: {
+                type: String
+            },
+            time: {
                 type: String
             }
         }

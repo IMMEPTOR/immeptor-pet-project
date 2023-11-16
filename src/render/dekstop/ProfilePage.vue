@@ -1,11 +1,18 @@
 <script>
 import AppMenuSideAccount from '../../components/dekstop/AppMenuSideAccaunt.vue';
 import AppProfileElement from '../../components/dekstop/AppProfileElement.vue';
-import axios from 'axios';
-
 import { onMounted } from 'vue';
 import { useDevice } from 'vue-device-detector'
 import { useRouter } from 'vue-router'
+import axios from 'axios';
+import socket from '../../socket'
+import AppTabletFeed from '../../components/dekstop/AppTabletFeed.vue';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone'; 
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 export default {
     components: {
         AppMenuSideAccount,
@@ -13,47 +20,100 @@ export default {
     },
     data() {
         return {
+            element_button_table: null,
+            newValue: null,
+            title: 'Добро пожаловать!',
+            description: `Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!`,
+            image: "../../src/assets/img/news_post_for_web.jpg",
+            update: false,
+            news: true,
+            token: null,
             name: '',
             surname: '',
-            token: null,
             admin: false,
         }
     },
-    // async beforeRouteEnter(to, fromR, next) {
-    //     let token = document.cookie;
-    //     let response = await axios.post('/api/configuration/auth/examination/token/user', {
-    //         token: token
-    //     })
+    async beforeRouteEnter(to, fromR, next) {
+        let token = document.cookie;
+        let response = await axios.post('/api/configuration/auth/examination/token/user', {
+            token: token
+        })
+        if (response.status == 200) {
+            next(true)
 
-    //     if (response.status == 200) {
-    //         next(true)
-    //     } else {
-    //         next(false)
-    //     }
-    // },
-    // setup() {
-    //     let { isMobile, isTablet, isDekstop } = useDevice();
-    //     onMounted(() => {
-    //         if (isMobile.value) console.log('Мобильное устройство!');
-    //         if (isTablet.value) console.log('Планшет');
-    //         if (isDekstop.value) console.log('Компьютер');
-    //     })
-
-    //     return { isMobile, isTablet, isDekstop };
-    // },
+        } else {
+            next(false)
+        }
+    },
     mounted() {
+        this.perfAuth();
         this.getNameUser();
-        
+
+        window.addEventListener('beforeunload', (event) => {
+            let serverTime = dayjs().utc();
+            socket.emit('user-disconnect-exit', {
+                id: document.cookie,
+                time: serverTime,
+            })
+            socket.disconnect();
+        });
     },
     methods: {
+        goToVoinForm() {
+            this.$router.push({
+                name: 'voin'
+            })
+        },
+        goWentUpdate(newValue) {
+            if (newValue == 'update') {
+                this.newValue = newValue;
+                this.title = 'Обновление Alpha 0.2v';
+                this.image = '../../src/assets/img/updates_web_product_image.jpg';
+                this.description = 'Обновление опубликовано 16.10.2023. Были добавлены настройки и оптимизированы внутренние системы продукта, а также исправлены баги.';
+                this.update = true;
+                this.news = false;
+            }
+        },
+        goWentNews(newValue) {
+            if (newValue == 'news') {
+                this.newValue = newValue;
+                this.title = 'Добро пожаловать!';
+                this.image = '../../src/assets/img/news_post_for_web.jpg';
+                this.description = 'Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!';
+                this.update = false;
+                this.news = true;
+            }
+        },
+        goToRegistrationForm() {
+            this.$router.push({
+                name: 'registration'
+            })
+        },
+        async perfAuth() {
+            let token = document.cookie;
+            let response = await axios.post('/api/gettoken', {
+                token: token
+            })
+            if (response.data.status == 100) {
+                document.cookie = "cookieName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+                if (!document.cookie) {
+                    this.$router.push({
+                        name: 'fe'
+                    })
+                }
+            } else if (response.data.status == 105) {
+                this.token = response.data.decoded;
+                if (this.token.role >= 2) {
+                    this.admin = true;
+                }
+            }
+        },
         async getNameUser() {
             let token = document.cookie;
             let response = await axios.post('/api/configuration/auth/examination/token/user', {
                 token: token
             })
-
             let data = response.data;
-
             if (response.data.status == 100) {
                 document.cookie = "cookieName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
                 if (!document.cookie) {
@@ -63,27 +123,19 @@ export default {
                 }
             } else if (response.data.status == 105) {
                 this.name = data.user.name;
-                this.surname = data.user.surname
-                this.token = data.decoded
-                console.log(this.name);
-
+                this.surname = data.user.surname;
+                this.token = data.decoded;
                 if (this.token.role >= 2) {
-                    this.admin = true
-                    console.log('Добро пожаловать, наш Администратор!')
+                    this.admin = true;
                 }
-            } else {
-                console.log('Ошибка вывода пользователя. Возможно не найден')
             }
-
-
-
         },
         goToAdminPanel() {
             this.$router.push({
                 name: 'feedPanel'
             })
-        }
-    },
+        },
+    }
 }
 </script>
 
@@ -100,13 +152,12 @@ export default {
                     <p>Панель Управления</p>
                 </div>
                 <div class="button_ui_header">
-                    <!-- <p>Помощь</p> -->
                 </div>
             </div>
         </div>
     </header>
     <main>
-        <AppMenuSideAccount> </AppMenuSideAccount>
+        <AppMenuSideAccount :key="token" > </AppMenuSideAccount>
         <AppProfileElement :firstName="name" :lastName="surname" />
     </main>
 </template>

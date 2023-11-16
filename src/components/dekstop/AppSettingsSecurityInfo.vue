@@ -11,7 +11,6 @@ export default {
         })
         let date = responce.data;
         if (date.status == 105) {
-            console.log(date);
             let getName = date.user.name;
             let getSurname = date.user.surname;
 

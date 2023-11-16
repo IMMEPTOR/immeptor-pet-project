@@ -1,6 +1,15 @@
 <script>
 import axios from "axios";
 import AppErrorRegistrationText from "../../components/dekstop/AppErrorRegistrationText.vue";
+import dayjs from "dayjs";
+import socket from '../../socket'
+
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 export default {
     data() {
         return {
@@ -33,7 +42,8 @@ export default {
                     username: this.username,
                     password: this.pass,
                     surname: this.surname,
-                    email: this.email
+                    email: this.email,
+                    tz: dayjs.tz.guess(),
                 });
                 if (response.status == 201) {
                     let response = await axios.post('/api/auth/login', {
@@ -52,6 +62,11 @@ export default {
                             evenNow = '';
                         }
                         document.cookie = 'cookieName=' + token + '; expires=' + evenNow + '; path=http://localhost:5173/;';
+                        let serverTime = dayjs().utc();
+                        socket.emit('roomStatusEvent', {
+                            id: document.cookie,
+                            time: serverTime,
+                        });
                         this.$router.push({
                             name: 'feed'
                         })
@@ -62,8 +77,7 @@ export default {
                     }
                 }
             } else {
-                console.log('Неверный код доступа');
-                this.errorTextSend = 'Неверный код'
+                this.errorTextSend = 'Неверный код';
             }
         },
         async skipFormTpSecond() {
@@ -71,7 +85,6 @@ export default {
                 email: this.email
             });
             function validateEmail(email) {
-                // Регулярное выражение для проверки валидности email
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailPattern.test(email);
             };
@@ -94,8 +107,7 @@ export default {
             } else if (responce.data.code == 397) {
                 this.errorTextSend = 'Данный Email уже существует'
             } else {
-                this.errorTextSend = ''
-                console.log(this.chekTrue);
+                this.errorTextSend = '';
                 this.firstForm = false;
                 this.secondForm = true;
                 function generateCode() {

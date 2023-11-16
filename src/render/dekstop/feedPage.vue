@@ -16,18 +16,8 @@ export default {
             news: true
         }
     },
-    mounted() {
+    mounted() { 
     },
-    // async beforeRouteEnter(to, fromR, next) {
-    //     let token = document.cookie;
-    //     let response = await axios.post('/api/configuration/auth/examination/token/user', {
-    //         token: token
-    //     })
-
-    //     if (response.status == 200) {
-    //         next(true);
-    //     }
-    // },
     methods: {
         goToVoinForm() {
             this.$router.push({
@@ -37,11 +27,9 @@ export default {
         goWentUpdate(newValue) {
             if (newValue == 'update') {
                 this.newValue = newValue;
-                console.log(this.newValue)
-
                 this.title = 'Обновление Alpha 0.2v';
                 this.image = '../../src/assets/img/updates_web_product_image.jpg';
-                this.description = 'Обновление опубликовано 16.10.2023. Были добавлены настройки и оптимизированы внутренние системы продукта, а также исправлены баги.';
+                this.description = 'Обновление опубликовано 16.11.2023. Разработанна новая система статусов пользователей, в том числе были исправленны систематизационные ошибки.';
                 this.update = true;
                 this.news = false;
             }
@@ -49,8 +37,6 @@ export default {
         goWentNews(newValue) {
             if (newValue == 'news') {
                 this.newValue = newValue;
-                console.log(this.newValue)
-
                 this.title = 'Добро пожаловать!';
                 this.image = '../../src/assets/img/news_post_for_web.jpg';
                 this.description = 'Дорогие пользователи, Мы рады представить вам новый продукт, мессенджер - IMMEPTOR. Со временнем, наша команда будет обновлять, улучшать и добавлять функционал. Следите за нашими новостями в официальной группе ВК и будьте в курсе последних событий внутри нашего проекта!';

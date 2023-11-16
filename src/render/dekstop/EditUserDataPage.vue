@@ -1,6 +1,6 @@
 <script>
 
-import { io } from 'socket.io-client';
+import socket from '../../socket'
 import axios from 'axios';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router'
@@ -19,54 +19,47 @@ export default {
             idotherUser: null,
         }
     },
-    // computed: {
-    //     recievedData() {
-    //         let rawData = this.$route.query.key;
-    //         return rawData;
-    //     }
-    // },
     mounted() {
-
         this.searchUserInDataBase();
+        window.addEventListener('beforeunload', (event) => {
+            let serverTime = dayjs().utc();
+            socket.emit('user-disconnect-exit', {
+                id: document.cookie,
+                time: serverTime,
+            })
+            socket.disconnect();
+        });
     },
     methods: {
         async searchUserInDataBase() {
             let idUser = this.$route.query.key;
             idUser = idUser.slice(1, -1);
             this.idotherUser = idUser;
-            console.log(idUser);
-
             let response = await axios.post('/api/admin/search/user', {
                 id: idUser
             });
             let user = response.data;
             this.fullname = user.fullusername;
             this.id = user.idSet;
-
             this.name = user.name;
             this.surname = user.surname;
             this.email = user.email;
             this.role = user.role;
-
             if (user.froze == true) {
                 this.froze = 1;
             } else {
                 this.froze = 0;
             }
-
             if (user.blockedAccount == true) {
                 this.blocked = 1;
             } else {
                 this.blocked = 0;
             }
-
             if (user.role >= 2) {
                 this.ad_info_ministration = 'Да'
             } else {
                 this.ad_info_ministration = 'Нет'
             }
-
-
         },
         goToExitOfAdminPage() {
             this.$router.push({

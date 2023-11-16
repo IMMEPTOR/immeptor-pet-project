@@ -2,6 +2,18 @@
 import DekstopProfile from '../render/dekstop/ProfilePage.vue'
 import MobileProfile from '../render/mobile/profilePage.vue'
 
+import socket from '../socket'
+
+import axios from 'axios';
+import dayjs from 'dayjs'
+
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+
 export default {
     components: {
         DekstopProfile,
@@ -16,11 +28,11 @@ export default {
     mounted() {
         let userAgent = navigator.userAgent.toLowerCase();
         if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
-            console.log('мобила')
+            // console.log('мобила')
             this.dekstop = false;
             this.mobile = false;
         } else {
-            console.log('пк')
+            // console.log('пк')
         }
     }
 }

@@ -7,6 +7,7 @@ let errorHandler = require('../utils/errorHandler')
 
 module.exports.login = async function (req, res) {
     let candidate = await User.findOne({ email: req.body.email });
+    let tz = req.body.tz;
     if (candidate) {
         // Проверка пароля, пользователь сществует
         let passwordResult = bcrypt.compareSync(req.body.password, candidate.password)
@@ -23,8 +24,12 @@ module.exports.login = async function (req, res) {
                     role: candidate.role,
                     froze: candidate.froze,
                     blockedAccount: candidate.blockedAccount,
+                    timeZone: tz,
                 }, keys.jwt, { expiresIn: 60 * 60 * 12 * 100 });
     
+                candidate.timezone = tz;
+
+                await candidate.save();
                 res.status(200).json({ token: `Bearer ${token}` });
             }
         } else {
@@ -67,7 +72,9 @@ module.exports.register = async function (req, res) {
             role: 1,
             froze: false,
             blockedAccount: false,
-            idSet: userId
+            idSet: userId,
+            timezone: req.body.tz,
+            countEventProccess: 0,
         })
 
         try {

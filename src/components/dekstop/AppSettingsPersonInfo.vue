@@ -36,7 +36,6 @@ export default {
         let date = responce.data;
 
         if (date.status == 105) {
-            console.log(date);
             let getName = date.user.name;
             let getSurname = date.user.surname;
 
@@ -57,7 +56,6 @@ export default {
             let editButton = document.querySelector(".button_edit_info");
             let saveButton = document.querySelector(".button_confirm_action");
             let element = document.getElementById("windowCheck");
-            // element.style.animation = "startWindow 0.9s forwards";
 
             if (!editButton.classList.contains("change_button_mod_confirm_save_back")) {
                 this.windowShow = false;
@@ -78,14 +76,11 @@ export default {
             }
         },
         async sendChangeEditInfo() {
-            // this.showWindow()
             let editButton = document.querySelector(".button_edit_info");
-            // let saveButton = document.querySelector(".button_confirm_action");
             let element = document.getElementById("windowCheck");
             let saveButton = document.querySelector(".button_confirm_action");
 
             if (this.startName !== this.name || this.startSurname !== this.surname) {
-                console.log('Данные должны отображаться новые!!!')
                 let chek = true;
                 if (!saveButton.classList.contains("disabled")) {
                     editButton.classList.remove("change_button_mod_confirm_save_back")
@@ -101,15 +96,6 @@ export default {
                         surname: this.surname,
                         idUser: this.id,
                     })
-
-
-
-
-                    // this.editToGoInformation();
-                    // if (responce.data.status == 465) {
-                    //     //    this.editToGoInformation();
-                    // }
-
                 }
             } else {
                 editButton.classList.remove("change_button_mod_confirm_save_back")
@@ -124,14 +110,7 @@ export default {
         showWindow() {
             this.windowShow = true;
             let element = document.getElementById("windowCheck");
-            // element.style.animation = "startWindow 0.9s forwards";
-
-            // element.style.display = "flex";
-
-
             setTimeout(function () {
-                // let element = document.getElementById("windowCheck");
-                // element.style.animation = 'endWindow 2.9s forwards';
                 element.style.display = "none";
             }, 4000)
         },
@@ -300,6 +279,7 @@ input {
 .button_edit_to_confirm_email {
     width: 15%;
     height: auto;
+    margin-left: 15px;
 }
 
 .button_edit_to_confirm_email p {

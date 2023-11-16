@@ -22,7 +22,6 @@ export default {
     },
     methods: {
         changeImageOnUpdate() {
-
         },
         clickTabletButton() {
             this.element_button_table = document.getElementsByClassName('disabled');

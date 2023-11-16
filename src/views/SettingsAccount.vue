@@ -1,14 +1,28 @@
 <script>
 import SettingsPage from '../render/dekstop/SettingsPage.vue';
+
+import socket from '../socket'
+
+import axios from 'axios';
+import dayjs from 'dayjs'
+
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 export default {
     data() {
         return {
-
+            date: '',
         }
     },
     components: {
         SettingsPage,
-    }
+    },
+    mounted() {
+    },
 }
 </script>
 
@@ -16,6 +30,4 @@ export default {
     <SettingsPage />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
