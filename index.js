@@ -174,7 +174,6 @@ io.on('connection', (socket) => {
         console.log(decoded)
 
         let user = await User.findOne({ email: decoded.email });
-        let time = room.time;
 
         // let user = await User.findOne({_id: room.key.userId});
         if (user && user.countEventProccess > 0) {

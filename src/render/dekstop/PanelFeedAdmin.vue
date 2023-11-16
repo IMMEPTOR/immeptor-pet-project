@@ -1,7 +1,6 @@
 <script>
 import AppFeedAdminPanelVue from '../../components/dekstop/AppFeedAdminPanel.vue';
-
-import socket from '../../socket'
+import socket from '../../socket';
 import axios from 'axios';
 
 export default {
@@ -43,15 +42,6 @@ export default {
         socket.on('SearchAdminUserInfo', (data) => {
             this.usersSearch = data.users;
         })
-
-        window.addEventListener('beforeunload', (event) => {
-            let serverTime = dayjs().utc();
-            socket.emit('user-disconnect-exit', {
-                id: document.cookie,
-                time: serverTime,
-            })
-            socket.disconnect();
-        });
     },
     methods: {
         goToExitOfAdminPage() {

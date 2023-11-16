@@ -30,7 +30,6 @@ export default {
             } else if (dialog.user_two == this.token.userId) {
                 senderId = dialog.user_one;
             }
-            console.log(senderId);
             this.$emit('sendingDialogs', dialog);
             this.$emit('valueChanged', 'true')
             this.$emit('statusEventPerson', senderId)

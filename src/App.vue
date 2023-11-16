@@ -28,8 +28,22 @@ export default {
   components: {
     RouterView
   },
-  unmounted() {
-  },
+  // beforeDestroy() {
+  //   window.addEventListener('beforeunload', (event) => {
+  //     let serverTime = dayjs().utc();
+  //     socket.emit('user-disconnect-exit', {
+  //       id: this.cookies,
+  //       time: serverTime,
+  //     })
+  //     socket.disconnect();
+  //   });
+  //   let serverTime = dayjs().utc();
+  //   socket.emit('user-disconnect-exit', {
+  //     id: this.date,
+  //     time: serverTime,
+  //   });
+  //   socket.disconnect();
+  // },
   created() {
     socket.connect();
     setInterval(() => {

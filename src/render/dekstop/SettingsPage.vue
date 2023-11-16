@@ -2,9 +2,8 @@
 import AppMenuSideAccaunt from '../../components/dekstop/AppMenuSideAccaunt.vue';
 import AppSettingsPersonInfoVue from '../../components/dekstop/AppSettingsPersonInfo.vue';
 import AppSettingsSecurityInfoVue from '../../components/dekstop/AppSettingsSecurityInfo.vue';
-
+import socket from '../../socket'
 import axios from 'axios';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 export default {
     data() {
         return {

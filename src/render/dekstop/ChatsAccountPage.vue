@@ -104,14 +104,14 @@ export default {
             }
         })
         this.getDialogs();
-        window.addEventListener('beforeunload', (event) => {
-            let serverTime = dayjs().utc();
-            socket.emit('user-disconnect-exit', {
-                id: this.cookies,
-                time: serverTime,
-            })
-            socket.disconnect();
-        });
+
+        
+
+
+        // this.socket.on(`backclosesocketconnection_${this.token.userId}`, (data) => {
+
+        // })
+
     },
     methods: {
         async perfAuth() {

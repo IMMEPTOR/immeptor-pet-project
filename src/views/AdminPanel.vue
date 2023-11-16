@@ -11,7 +11,6 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 export default {
     components: {
         DekstopAdminPanelFeed,
@@ -30,8 +29,17 @@ export default {
         } else {
             // console.log('пк')
         }
+
+        window.addEventListener('beforeunload', (event) => {
+            let serverTime = dayjs().utc();
+            socket.emit('user-disconnect-exit', {
+                id: document.cookie,
+                time: serverTime,
+            })
+            socket.disconnect();
+        });
     },
-    
+
 }
 </script>
 
