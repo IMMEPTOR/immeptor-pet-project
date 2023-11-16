@@ -26,7 +26,7 @@ export default {
             let dialog = response.data;
             let senderId = null;
             if (dialog.user_one == this.token.userId) {
-                senderId = dialog.user_two;
+                senderId = dialog.time_two_user;
             } else if (dialog.user_two == this.token.userId) {
                 senderId = dialog.user_one;
             }
