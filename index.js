@@ -469,7 +469,10 @@ io.on('connection', (socket) => {
                     dontwentTemp = true;
 
                     console.log("Чат повторяется и не будет сохранен но будет отрендарен");
-                    io.to('feedRoomlastMes').emit('newdialogFromInputSecond', chat);
+                    io.to('feedRoomlastMes').emit('newdialogFromInputSecond', {
+                        chat: chat,
+                        senderId: data.id,
+                    });
                     chat.set_mark = 0;
                     await chat.save();
                 }
@@ -499,14 +502,14 @@ io.on('connection', (socket) => {
         socket.leave(room);
         console.log(`${socket.id} left room: ${room}`)
     })
-    socket.on('disconnect', (data) => {
+    socket.on('disconnect', async (data) => {
+        // let userId = socket.handshake.headers.cookie;
+        // console.log(userId);
         // Используйте userId при отключении
         // console.log(`Пользователь ${data} отключился`);
         // removeDisconnectedSocket(socket.id);
-    });
-
-    socket.on('disconnecting', async (data) => {
-        let userId = socket.handshake.headers.cookie; // вся соль здесь
+        let userId = socket.handshake.query.cookie; // вся соль здесь
+        // let userId = socket.handshake.headers.cookie; // вся соль здесь
         let ServerTime = socket.handshake.query.time;
 
         // Получаем текущую дату и время
@@ -514,7 +517,7 @@ io.on('connection', (socket) => {
 
         // Преобразовываем в UTC
         // let utcDate = currentDate.utc();
-        console.log(`Пользователь ${ServerTime} нас покинул`);
+        console.log(`Пользователь ${userId} нас покинул`);
 
         let secretKey = 'dev_jwt';
         let decoded = '';
@@ -550,6 +553,53 @@ io.on('connection', (socket) => {
         } else {
             console.log("Пучек выпал далеко")
         }
+    });
+
+    socket.on('disconnecting', async (data) => {
+        // let userId = socket.handshake.headers.cookie; // вся соль здесь
+        // let ServerTime = socket.handshake.query.time;
+
+        // // Получаем текущую дату и время
+        // // let ServerTime = dayjs().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+
+        // // Преобразовываем в UTC
+        // // let utcDate = currentDate.utc();
+        // console.log(`ну и ну ${data}`);
+
+        // let secretKey = 'dev_jwt';
+        // let decoded = '';
+        // let tokenWithPrefix = userId;
+
+        // try {
+        //     let token = tokenWithPrefix.replace('Bearer ', '');
+        //     let tokening = token.replace('cookieName=', '');
+        //     decoded = jwt.verify(tokening, secretKey);
+        // } catch (e) {
+        //     console.log(e);
+        // }
+
+        // console.log(decoded)
+
+        // let user = await User.findOne({ _id: decoded.userId });
+        // if (user) {
+        //     if (user.countEventProccess > 0) {
+        //         user.countEventProccess -= 1;
+        //         if (user.countEventProccess == 0) {
+        //             let time = ServerTime;
+        //             let roomStatus = user._id + '_status';
+        //             user.lastTime = time;
+        //             user.statusOnline = 0;
+
+        //             io.to(`${roomStatus}`).emit(`status_online_${user._id}`, {
+        //                 status: user.statusOnline,
+        //                 time: user.lastTime,
+        //             });
+        //         }
+        //         await user.save();
+        //     }
+        // } else {
+        //     console.log("Пучек выпал далеко")
+        // }
     });
 
 });

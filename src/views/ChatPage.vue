@@ -35,12 +35,7 @@ export default {
             // console.log('пк')
         }
 
-        // socket.on('disconnect', () => {
-        //     let serverTime = dayjs().utc();
-        //     socket.emit('disconnecting', {
-        //         time: serverTime,
-        //     });
-        // });
+        
     },
 }
 </script>

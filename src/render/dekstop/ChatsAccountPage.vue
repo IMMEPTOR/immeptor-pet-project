@@ -75,15 +75,16 @@ export default {
         });
 
         socket.on('newdialogFromInputSecond', (data) => {
+            this.statusChangePersonOnline(data.senderId);
             if (!this.roomingUserSocket) {
-                socket.emit('joinRoom', data._id);
-                this.roomingUserSocket = data._id;
+                socket.emit('joinRoom', data.chat._id);
+                this.roomingUserSocket = data.chat._id;
             } else {
                 socket.emit('leaveRoom', this.roomingUserSocket);
-                socket.emit('joinRoom', data._id);
-                this.roomingUserSocket = data._id;
+                socket.emit('joinRoom', data.chat._id);
+                this.roomingUserSocket = data.chat._id;
             }
-            if ( data.set_mark == 1 && data.time_two_user == this.token.userId ) {
+            if ( data.chat.set_mark == 1 && data.chat.time_two_user == this.token.userId ) {
                 this.chats.push(data);
                 this.dialog = data;
                 this.showChat = true;
@@ -180,7 +181,6 @@ export default {
             let token = this.token;
             this.searchuser = '';
             this.userIndex = null;
-            this.statusChangePersonOnline(user._id);
             socket.emit('updateinputchat', {
                 idIUser: token,
                 id: user._id,

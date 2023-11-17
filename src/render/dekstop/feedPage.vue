@@ -27,7 +27,7 @@ export default {
         goWentUpdate(newValue) {
             if (newValue == 'update') {
                 this.newValue = newValue;
-                this.title = 'Обновление Alpha 0.2v';
+                this.title = 'Alpha 0.3v';
                 this.image = '../../src/assets/img/updates_web_product_image.jpg';
                 this.description = 'Обновление опубликовано 16.11.2023. Разработанна новая система статусов пользователей, в том числе были исправленны систематизационные ошибки.';
                 this.update = true;
