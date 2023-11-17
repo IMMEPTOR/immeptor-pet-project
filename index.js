@@ -131,7 +131,10 @@ function escapeRegExp(input) {
 let containerUserConected = 0;
 let networkAdminsNowCount = 0;
 let controllerAuth = require('./controllers/auth');
-let dayjs = require('dayjs')('dayjs/plugin/utc');
+let dayjs = require('dayjs');
+let utc = require('dayjs/plugin/utc');
+
+dayjs.extend(utc);
 let countConnectedAdmins = controllerAuth.countAuth;
 
 let containerSocketAdmin = [];
@@ -452,7 +455,7 @@ io.on('connection', (socket) => {
                     $or: [
                         { $eq: ["$user_one", iUser._id] },
                         { $eq: ["$user_two", iUser._id] },
-                        { $eq: ["$time_two_user", iUser._id]}
+                        { $eq: ["$time_two_user", iUser._id] }
                     ]
                 }
             });
@@ -461,10 +464,10 @@ io.on('connection', (socket) => {
                 if (chat.user_one == data.id || chat.user_two == data.id || chat.time_two_user == data.id) {
                     dontwentTemp = true;
                 }
-                if ( chat.set_mark == 1 && chat.time_two_user == iUser._id) {
+                if (chat.set_mark == 1 && chat.time_two_user == iUser._id) {
                     chat.user_two = chat.time_two_user;
                     dontwentTemp = true;
-                    
+
                     console.log("Чат повторяется и не будет сохранен но будет отрендарен");
                     io.to('feedRoomlastMes').emit('newdialogFromInputSecond', chat);
                     chat.set_mark = 0;
@@ -505,12 +508,18 @@ io.on('connection', (socket) => {
     socket.on('disconnecting', async (data) => {
         let userId = socket.handshake.headers.cookie; // вся соль здесь
         let ServerTime = socket.handshake.query.time;
-        // console.log(`Пользователь ${did} нас покинул`);
+
+        // Получаем текущую дату и время
+        // let ServerTime = dayjs().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+
+        // Преобразовываем в UTC
+        // let utcDate = currentDate.utc();
+        console.log(`Пользователь ${ServerTime} нас покинул`);
 
         let secretKey = 'dev_jwt';
         let decoded = '';
         let tokenWithPrefix = userId;
-        
+
         try {
             let token = tokenWithPrefix.replace('Bearer ', '');
             let tokening = token.replace('cookieName=', '');
@@ -522,8 +531,6 @@ io.on('connection', (socket) => {
         console.log(decoded)
 
         let user = await User.findOne({ _id: decoded.userId });
-
-        // let user = await User.findOne({_id: room.key.userId});
         if (user) {
             if (user.countEventProccess > 0) {
                 user.countEventProccess -= 1;
@@ -532,7 +539,7 @@ io.on('connection', (socket) => {
                     let roomStatus = user._id + '_status';
                     user.lastTime = time;
                     user.statusOnline = 0;
-    
+
                     io.to(`${roomStatus}`).emit(`status_online_${user._id}`, {
                         status: user.statusOnline,
                         time: user.lastTime,

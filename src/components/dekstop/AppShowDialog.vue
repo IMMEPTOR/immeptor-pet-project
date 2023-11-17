@@ -168,7 +168,7 @@ export default {
                 const userTime = serverTime.tz(this.userTimezone);
                 return userTime.format('HH:mm');
             } else {
-                return "00:00"
+                return ""
             }
             
         },

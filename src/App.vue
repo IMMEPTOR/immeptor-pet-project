@@ -47,8 +47,7 @@ export default {
   created() {
     socket.connect();
     socket.on('disconnect', () => {
-      // Отправка куки на сервер при отключении
-      let id = "82813sdf3234";
+      // let serverTime = dayjs().utc();
       socket.emit('disconnecting');
     });
     setInterval(() => {
