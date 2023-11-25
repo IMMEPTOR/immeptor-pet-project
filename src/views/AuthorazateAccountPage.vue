@@ -20,7 +20,7 @@ export default {
     },
     data() {
         return {
-            dekstop: true,
+            dekstop: false,
             mobile: false,
         }
     },
@@ -28,10 +28,11 @@ export default {
         let userAgent = navigator.userAgent.toLowerCase();
         if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
             // console.log('мобила')
-            this.dekstop = false;
-            this.mobile = false;
+            this.mobile = true;
+            
         } else {
             // console.log('пк')
+            this.dekstop = true;
         }
     }
 }

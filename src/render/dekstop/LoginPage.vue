@@ -23,6 +23,13 @@ export default {
             farze: false,
         }
     },
+    mounted() {
+        setInterval(() => {
+            console.log(this.chekTrue); 
+            // console.log( new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)); 
+           
+        }, 1000);
+    },
     methods: {
         async toInLogin(evt) {
             evt.preventDefault();
@@ -46,7 +53,7 @@ export default {
                 time = time.toUTCString();
                 let evenNow;
                 if (this.chekTrue) {
-                    evenNow = 'Sun, 31 Dec 2023 23:59:00 UTC';
+                    evenNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                 } else {
                     evenNow = '';
                 }
@@ -112,7 +119,7 @@ export default {
                 <div class="container_checkbox">
                     <label for="">
                         Запомнить на этом устройстве
-                        <input checked type="checkbox">
+                        <input v-model="chekTrue" checked type="checkbox">
                     </label>
                 </div>
             </div>

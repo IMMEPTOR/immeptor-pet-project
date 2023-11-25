@@ -7,7 +7,7 @@ export default {
     data() {
         return {
             displayChats: false,
-            displayDialogs: true,
+            displayDialogs: false,
             content: '',
         }
     },
@@ -37,12 +37,12 @@ export default {
         }
 
         // Обработчик события при вводе текста или изменении содержимого textarea
-        document.getElementById("autoHeightTextarea").addEventListener("input", function () {
-            adjustTextareaHeight(this);
-        });
+        // document.getElementById("autoHeightTextarea").addEventListener("input", function () {
+        //     adjustTextareaHeight(this);
+        // });
 
-        // Вызов функции при загрузке страницы для установки правильной высоты textarea, если текст уже присутствует
-        adjustTextareaHeight(document.getElementById("autoHeightTextarea"));
+        // // Вызов функции при загрузке страницы для установки правильной высоты textarea, если текст уже присутствует
+        // adjustTextareaHeight(document.getElementById("autoHeightTextarea"));
     },
     async beforeRouteEnter(to, fromR, next) {
         let token = document.cookie;

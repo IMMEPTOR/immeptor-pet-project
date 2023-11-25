@@ -667,7 +667,7 @@ app.post('/api/send/email/code', function (req, res) {
     let code = req.body.code;
     let email = req.body.email;
     let mailOptions = {
-        from: 'immeptor@gmail.com',
+        from: '<immeptor@xmail.ru>',
         to: `${email}`,
         subject: 'Подтвердите почту',
         html: `
@@ -766,7 +766,7 @@ app.post('/api/send/email/vhoin', async function (req, res) {
 
     if (user) {
         let mailOptions = {
-            from: 'immeptor@gmail.com',
+            from: '<immeptor@xmail.ru>',
             to: `${email}`,
             subject: 'Замечена новая активность',
             html: `

@@ -29,6 +29,11 @@ export default {
     components: {
         AppErrorRegistrationText,
     },
+    mounted() {
+        setInterval(() => {
+            console.log(this.chekTrue);
+        }, 1000);
+    },
     methods: {
         feedPageGoToBack() {
             this.$router.push({
@@ -57,7 +62,7 @@ export default {
                         time = time.toUTCString();
                         let evenNow;
                         if (this.chekTrue) {
-                            evenNow = 'Sun, 31 Dec 2023 23:59:00 UTC';
+                            evenNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                         } else {
                             evenNow = '';
                         }

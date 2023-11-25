@@ -25,7 +25,7 @@ module.exports.login = async function (req, res) {
                     froze: candidate.froze,
                     blockedAccount: candidate.blockedAccount,
                     timeZone: tz,
-                }, keys.jwt, { expiresIn: 60 * 60 * 12 * 100 });
+                }, keys.jwt, { expiresIn: '7d' });
     
                 candidate.timezone = tz;
 

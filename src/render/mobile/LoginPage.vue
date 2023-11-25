@@ -41,8 +41,8 @@ export default {
                 this.setFroze = true;
                 console.log('Аккаунт заморожен!')
             } else if (date.token) {
-                let time = new Date(Date.now() + 86400e3);
-                time = time.toUTCString();
+                let time = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                // time = time.toUTCString();
                 document.cookie = 'cookieName=' + date.token + '; expires=' + time + '; path=http://localhost:5173/;';
                 this.$router.push({
                     name: 'feed'

@@ -16,7 +16,7 @@ let socket = io('http://localhost:3010', {
     cookie: document.cookie,
   }
 });
-
+// если пользователь остается в сети изначально с куками, то не обновляется время!!! Куки конечно хорошо, но тайминг нет!
 setInterval(() => {
   if (cook !== document.cookie) {
     socket = io('http://localhost:3010', {
@@ -28,6 +28,7 @@ setInterval(() => {
     });
     cook = document.cookie;
   }
+  
 }, 500)
 
 export default socket;
