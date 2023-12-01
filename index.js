@@ -35,14 +35,73 @@
 // https.createServer(options, app).listen(PORT, HOST, null, function () {
 //     console.log('Server listening on port %d in %s mode', this.address().port, app.settings.env);
 // });
+
+let https = require('https')
+let express = require('express')
+let forge = require('node-forge')
+let app;
+
+
+let server = https.createServer(
+    generateX509Certificate([
+        { type: 6, value: 'http://localhost' },
+        { type: 7, ip: '127.0.0.1' }
+    ]),
+    makeExpressApp()
+)
+server.listen(8443, () => {
+    console.log('Listening on https://localhost:8443/')
+})
+
+
+function generateX509Certificate(altNames) {
+    let issuer = [
+        { name: 'commonName', value: 'example.com' },
+        { name: 'organizationName', value: 'E Corp' },
+        { name: 'organizationalUnitName', value: 'Washington Township Plant' }
+    ]
+    let certificateExtensions = [
+        { name: 'basicConstraints', cA: true },
+        { name: 'keyUsage', keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true },
+        { name: 'extKeyUsage', serverAuth: true, clientAuth: true, codeSigning: true, emailProtection: true, timeStamping: true },
+        { name: 'nsCertType', client: true, server: true, email: true, objsign: true, sslCA: true, emailCA: true, objCA: true },
+        { name: 'subjectAltName', altNames },
+        { name: 'subjectKeyIdentifier' }
+    ]
+    let keys = forge.pki.rsa.generateKeyPair(2048)
+    let cert = forge.pki.createCertificate()
+    cert.validity.notBefore = new Date()
+    cert.validity.notAfter = new Date()
+    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1)
+    cert.publicKey = keys.publicKey
+    cert.setSubject(issuer)
+    cert.setIssuer(issuer)
+    cert.setExtensions(certificateExtensions)
+    cert.sign(keys.privateKey)
+    return {
+        key: forge.pki.privateKeyToPem(keys.privateKey),
+        cert: forge.pki.certificateToPem(cert)
+    }
+}
+
+
+function makeExpressApp() {
+    app = express()
+    app.get('/', (req, res) => {
+        res.json({ message: 'Hello, friend' })
+    })
+    return app
+}
+
+
 // это HTTP сервер
-let express = require('express');
-let app = express();
+// let express = require('express'); // ОНОНО
+// let app = express(); // ОНОНО
 let http = require('http');
 let path = require('path');
 let fs = require('fs');
 // let debug = require('debug')('immeptor: server');
-let server = http.createServer(app);
+// let server = http.createServer(app); // ОНОНО
 let bodyParser = require('body-parser')
 let cors = require('cors');
 app.use(cors());
@@ -56,7 +115,7 @@ let emitter = new events.EventEmitter();
 
 let io = new Server(server, {
     transport: ['websocket'],
-});
+}); // ОНОНО
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -632,9 +691,9 @@ let removeDisconnectedSocket = (socketId) => {
     })
 }
 
-server.listen(port, () => {
-    console.log(`http://localhost:${port}/`);
-});
+// server.listen(port, () => {
+//     console.log(`http://localhost:${port}/`);
+// });
 
 // Настройка БД
 mongoose.connect(keys.mongoURI)
