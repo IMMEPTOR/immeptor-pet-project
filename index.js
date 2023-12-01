@@ -36,70 +36,36 @@
 //     console.log('Server listening on port %d in %s mode', this.address().port, app.settings.env);
 // });
 
-let https = require('https')
-let express = require('express')
-let forge = require('node-forge')
-let app;
+let fs = require('fs');
+let http = require('http');
+let https = require('https');
+let privateKey  = fs.readFileSync('/etc/letsencrypt/live/dv8immeptorx.ru/privkey.pem', 'utf8');
+let certificate = fs.readFileSync('/etc/letsencrypt/live/dv8immeptorx.ru/fullchain.pem', 'utf8');
 
+let credentials = {key: privateKey, cert: certificate};
+let express = require('express');
+let app = express();
 
-let server = https.createServer(
-    generateX509Certificate([
-        { type: 6, value: 'http://localhost' },
-        { type: 7, ip: '127.0.0.1' }
-    ]),
-    makeExpressApp()
-)
-server.listen(8443, () => {
-    console.log('Listening on https://localhost:8443/')
-})
+// your express configuration here
+let httpServer = http.createServer(app);
+let httpsServer = https.createServer(credentials, app);
 
+httpServer.listen(8080, () => {
+    console.log(`http://localhost:8080/`);
+});
+httpServer.listen(8080);
+httpServer.listen(8443, () => {
+    console.log(`http://localhost:8443/`);
+});
+httpsServer.listen(8443);
 
-function generateX509Certificate(altNames) {
-    let issuer = [
-        { name: 'commonName', value: 'example.com' },
-        { name: 'organizationName', value: 'E Corp' },
-        { name: 'organizationalUnitName', value: 'Washington Township Plant' }
-    ]
-    let certificateExtensions = [
-        { name: 'basicConstraints', cA: true },
-        { name: 'keyUsage', keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true },
-        { name: 'extKeyUsage', serverAuth: true, clientAuth: true, codeSigning: true, emailProtection: true, timeStamping: true },
-        { name: 'nsCertType', client: true, server: true, email: true, objsign: true, sslCA: true, emailCA: true, objCA: true },
-        { name: 'subjectAltName', altNames },
-        { name: 'subjectKeyIdentifier' }
-    ]
-    let keys = forge.pki.rsa.generateKeyPair(2048)
-    let cert = forge.pki.createCertificate()
-    cert.validity.notBefore = new Date()
-    cert.validity.notAfter = new Date()
-    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1)
-    cert.publicKey = keys.publicKey
-    cert.setSubject(issuer)
-    cert.setIssuer(issuer)
-    cert.setExtensions(certificateExtensions)
-    cert.sign(keys.privateKey)
-    return {
-        key: forge.pki.privateKeyToPem(keys.privateKey),
-        cert: forge.pki.certificateToPem(cert)
-    }
-}
-
-
-function makeExpressApp() {
-    app = express()
-    app.get('/', (req, res) => {
-        res.json({ message: 'Hello, friend' })
-    })
-    return app
-}
-
-
+// -------------------------------------------------------
 // это HTTP сервер
 // let express = require('express'); // ОНОНО
 // let app = express(); // ОНОНО
-let http = require('http');
+// let http = require('http'); // ОНОНО
 let path = require('path');
-let fs = require('fs');
+// let fs = require('fs'); // ОНОНО
 // let debug = require('debug')('immeptor: server');
 // let server = http.createServer(app); // ОНОНО
 let bodyParser = require('body-parser')
