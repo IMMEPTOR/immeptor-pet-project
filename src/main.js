@@ -1,6 +1,6 @@
 // // Запросы к серверу
 import axios from "axios";
-axios.defaults.baseURL = 'https://localhost:8443';
+axios.defaults.baseURL = 'http://localhost:3010';
 
 // Работа с датой
 import dayjs from 'dayjs';

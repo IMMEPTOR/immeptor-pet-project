@@ -105,6 +105,7 @@ export default {
     <footer>
         <div class="name_company_container">
             <p>IMMEPTOR</p>
+            <p><a href="/privacy" target="_blank">Политика конфиденциальности</a></p>
         </div>
         <div class="information_use_web_p">
             <p>Кочетов Ярослав Олегович. IMMEPTOR ©2023️ </p>
@@ -547,6 +548,9 @@ footer {
 .name_company_container {
     width: auto;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 70px;
 }
 
 .name_company_container p {
@@ -574,4 +578,15 @@ footer {
     font-weight: 400;
     line-height: normal;
     padding: 0 10px 10px 0;
-}</style>
+}
+
+.name_company_container a {
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+.name_company_container a:hover {
+    color: rgb(202, 202, 202);
+}
+</style>

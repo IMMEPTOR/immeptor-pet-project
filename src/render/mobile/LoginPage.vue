@@ -88,6 +88,12 @@ export default {
                             autocomplete="off" id="pass">
                     </div>
                 </div>
+                <div>
+                    <div class="verify_policy">
+                        <p>Нажимая «Войти», вы принимаете <a href="/privacy">политику
+                                конфиденциальности</a>.</p>
+                    </div>
+                </div>
                 <div class="container_button_send_date_from_form">
                     <button type="submit">Войти</button>
                     <button type="button">Зарегестрироваться</button>
@@ -226,5 +232,16 @@ button:hover {
     box-shadow: 0px 3px 2px 1px rgba(11, 11, 12, 0.2);
     color: rgb(187, 184, 184);
     cursor: pointer;
+}
+
+.verify_policy {
+    width: 300px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 13px;
+    text-align: center;
+}
+
+.verify_policy a {
+    color: rgb(0, 140, 255);
 }
 </style>

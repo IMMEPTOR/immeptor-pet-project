@@ -24,11 +24,6 @@ export default {
         }
     },
     mounted() {
-        setInterval(() => {
-            console.log(this.chekTrue); 
-            // console.log( new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)); 
-           
-        }, 1000);
     },
     methods: {
         async toInLogin(evt) {
@@ -121,6 +116,11 @@ export default {
                         Запомнить на этом устройстве
                         <input v-model="chekTrue" checked type="checkbox">
                     </label>
+                </div>  
+            </div>
+            <div>
+                <div class="verify_policy">
+                    <p>Нажимая «Подтвердить», вы принимаете <a href="/privacy" target="_blank">политику конфиденциальности</a>.</p>
                 </div>
             </div>
             <button type="submit">Подтвердить</button>
@@ -157,6 +157,8 @@ export default {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+
 * {
     margin: 0;
 }
@@ -350,5 +352,16 @@ button:hover {
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+}
+
+.verify_policy {
+    width: 400px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 13px;
+    text-align: center;
+}
+
+.verify_policy a {
+    color: rgb(0, 140, 255);
 }
 </style>

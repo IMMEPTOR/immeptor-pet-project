@@ -9,6 +9,7 @@ import RegistrationPage from './views/AuthRegisterPage.vue'
 import FeedPanel from './views/AdminPanel.vue';
 import editPage from './views/EditAccountAdminInfoPanel.vue';
 import SettingsAccount from './views/SettingsAccount.vue'
+import PrivacyPage from './views/PrivacyPage.vue'
 export default createRouter({
     // История переходов сохраняется
     history: createWebHistory(),
@@ -27,6 +28,11 @@ export default createRouter({
                     next('feed')
                 }
             }
+        },
+        {
+            path: '/privacy',
+            name: 'privacy',
+            component: PrivacyPage
         },
         {
             path: '/voin',

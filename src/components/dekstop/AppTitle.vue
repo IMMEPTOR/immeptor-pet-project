@@ -28,6 +28,8 @@ export default {
                 this.title = 'Редактирование данных пользователя'
             } else if (this.$route.path == '/settings') {
                 this.title = 'Настройки'
+            } else if (this.$route.path == '/privacy') {
+                this.title = 'Политика конфиденциальности'
             }
         }
     }

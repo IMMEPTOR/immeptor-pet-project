@@ -89,10 +89,30 @@ export default {
             let responce = await axios.post('/api/sec/email/to/registration/plkgohyftsf/redot/of/regostration', {
                 email: this.email
             });
+
             function validateEmail(email) {
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailPattern.test(email);
             };
+
+            function emailVerify(email) {
+                let domainRegex = /@([A-Za-z0-9.-]+)$/;
+                // Извлечение домена из электронной почты
+                let match = email.match(domainRegex);
+                if (match) {
+                    let domain = match[1];
+                    // Проверка домена на иностранность
+                    let foreignDomains = ["gmail.com", "yahoo.com", "hotmail.com"]; // Добавьте другие иностранные домены при необходимости
+
+                    if (foreignDomains.includes(domain)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    // res.status(400).json({ error: "Неверный формат электронной почты." });
+                }
+            }
             if (!this.username) {
                 this.errorTextSend = 'Введите Имя'
             } else if (!this.surname) {
@@ -101,6 +121,10 @@ export default {
                 this.errorTextSend = 'Введите email'
             } else if (!validateEmail(this.email)) {
                 this.errorTextSend = 'Неверный email'
+            } else if (responce.data.code == 397) {
+                this.errorTextSend = 'Данный Email уже существует'
+            } else if (!emailVerify(this.email)) {
+                this.errorTextSend = 'Неподдерживаемый почтовый сервис'
             } else if (!this.pass) {
                 this.errorTextSend = 'Введите пароль'
             } else if (this.pass.length < 8) {
@@ -109,8 +133,6 @@ export default {
                 this.errorTextSend = 'Повторите пароль'
             } else if (this.pass !== this.detectPassword) {
                 this.errorTextSend = 'Пароли не совпадают'
-            } else if (responce.data.code == 397) {
-                this.errorTextSend = 'Данный Email уже существует'
             } else {
                 this.errorTextSend = '';
                 this.firstForm = false;
@@ -172,6 +194,12 @@ export default {
                             Запомнить на этом устройстве
                             <input v-model="chekTrue" checked type="checkbox">
                         </label>
+                    </div>
+                </div>
+                <div>
+                    <div class="verify_policy">
+                        <p>Нажимая «Далее», вы принимаете <a href="/privacy" target="_blank">политику
+                                конфиденциальности</a>.</p>
                     </div>
                 </div>
                 <button @click="skipFormTpSecond" type="button">Далее</button>
@@ -395,5 +423,16 @@ input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
     /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.verify_policy {
+    width: 400px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 13px;
+    text-align: center;
+}
+
+.verify_policy a {
+    color: rgb(0, 140, 255);
 }
 </style>

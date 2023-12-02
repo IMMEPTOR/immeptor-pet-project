@@ -1,73 +1,37 @@
-// let express = require('express');
-// let https = require('https');
+// Для продакшна
 // let fs = require('fs');
+// let http = require('http');
+// let https = require('https');
+// let privateKey  = fs.readFileSync('/etc/letsencrypt/live/dv8immeptorx.ru/privkey.pem', 'utf8');
+// let certificate = fs.readFileSync('/etc/letsencrypt/live/dv8immeptorx.ru/fullchain.pem', 'utf8');
 
-// let PORT = process.env.PORT || 8443;
-// let HOST = process.env.HOST || '';
-
+// let credentials = {key: privateKey, cert: certificate};
+// let express = require('express');
 // let app = express();
 
-// app.use(express.json()); // Разбор тела запроса в формате JSON
-// app.use(express.urlencoded({ extended: true })); // Разбор тела запроса в формате x-www-form-urlencoded
+// // your express configuration here
+// let httpServer = http.createServer(app);
+// let httpsServer = https.createServer(credentials, app);
 
-// if (process.env.NODE_ENV === 'development') {
-//     app.use((err, req, res, next) => {
-//         console.error(err.stack);
-//         res.status(500).send('Something broke!');
-//     });
-// }
-
-// // Обработка ошибок в режиме продакшн
-// if (process.env.NODE_ENV === 'production') {
-//     app.use((err, req, res, next) => {
-//         res.status(500).send('Something went wrong!');
-//     });
-// }
-
-// let options = {
-//     key: fs.readFileSync('certificates/private.key'),
-//     cert: fs.readFileSync('certificates/certificate.crt'),
-//     // key: fs.readFileSync('ssl/key.pem'),
-//     ca: fs.readFileSync('certificates/request.csr'),
-//     // cert: fs.readFileSync('ssl/cert.pem')
-// }
-
-// https.createServer(options, app).listen(PORT, HOST, null, function () {
-//     console.log('Server listening on port %d in %s mode', this.address().port, app.settings.env);
+// httpServer.listen(8080, () => {
+//     console.log(`http://localhost:8080/`);
 // });
 
-let fs = require('fs');
-let http = require('http');
-let https = require('https');
-let privateKey  = fs.readFileSync('/etc/letsencrypt/live/dv8immeptorx.ru/privkey.pem', 'utf8');
-let certificate = fs.readFileSync('/etc/letsencrypt/live/dv8immeptorx.ru/fullchain.pem', 'utf8');
+// httpsServer.listen(8443, () => {
+//     console.log(`http://localhost:8443/`);
+// });
 
-let credentials = {key: privateKey, cert: certificate};
-let express = require('express');
-let app = express();
-
-// your express configuration here
-let httpServer = http.createServer(app);
-let httpsServer = https.createServer(credentials, app);
-
-httpServer.listen(8080, () => {
-    console.log(`http://localhost:8080/`);
-});
-httpServer.listen(8080);
-httpServer.listen(8443, () => {
-    console.log(`http://localhost:8443/`);
-});
-httpsServer.listen(8443);
+// Перед деплоем не забыть изакоментировать прослушивания для http из тестовой(локальной) версии
 
 // -------------------------------------------------------
-// это HTTP сервер
-// let express = require('express'); // ОНОНО
-// let app = express(); // ОНОНО
-// let http = require('http'); // ОНОНО
+// это HTTP сервер для локальки))
+let express = require('express'); // ОНОНО
+let app = express(); // ОНОНО
+let http = require('http'); // ОНОНО
 let path = require('path');
-// let fs = require('fs'); // ОНОНО
+let fs = require('fs'); // ОНОНО
 // let debug = require('debug')('immeptor: server');
-// let server = http.createServer(app); // ОНОНО
+let server = http.createServer(app); // ОНОНО
 let bodyParser = require('body-parser')
 let cors = require('cors');
 app.use(cors());
@@ -79,7 +43,7 @@ let port = 3010;
 let events = require('events');
 let emitter = new events.EventEmitter();
 
-let io = new Server(server, {
+let io = new Server(server, { // исправить при проде на httpsServer <--> server
     transport: ['websocket'],
 }); // ОНОНО
 
@@ -657,9 +621,9 @@ let removeDisconnectedSocket = (socketId) => {
     })
 }
 
-// server.listen(port, () => {
-//     console.log(`http://localhost:${port}/`);
-// });
+server.listen(port, () => {
+    console.log(`http://localhost:${port}/`);
+});
 
 // Настройка БД
 mongoose.connect(keys.mongoURI)
