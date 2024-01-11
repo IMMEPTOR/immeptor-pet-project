@@ -2,18 +2,17 @@
 export default {
     data() {
         return {
+
         }
     },
     props: {
-        textError: 'Ошибка'
-    },
+        email: null,
+    }
 }
 </script>
 
 <template>
-    <p class="text_error_text_window">{{ textError }}</p>
+<p>{{email}}</p>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

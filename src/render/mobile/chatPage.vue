@@ -1,85 +1,276 @@
 <script>
 import UiMenuBottom from '../../components/mobile/UiMenuBottom.vue';
+import DisplayChats from '../../components/mobile/AppDisplayChats.vue';
+import ShowChat from '../../components/mobile/AppShowChat.vue';
+import axios from 'axios';
 
-import { ref, watch, toRef } from 'vue'
-import { io } from 'socket.io-client';
+import { ref, watch, toRef, defineComponent } from 'vue'
+import dayjs from 'dayjs'
+
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+import socket from '../../socket';
 export default {
     data() {
         return {
-            displayChats: false,
+            displayChats: true,
             displayDialogs: false,
             content: '',
+            chats: null,
+            token: null,
+            dialog: null,
+            admin: false,
+            cookies: null,
+            roomingUserSocket: null,
+            clickedItemId: null,
+            TakeDialog: null,
+            showChat: false,
+            searchuser: '',
+            userIndex: null,
+            youSearch: '',
+            displayChatViewList: true,
         }
     },
     components: {
         UiMenuBottom,
+        DisplayChats,
+        ShowChat,
     },
     watch: {
         contents() {
             this.adjustTextareaHeight();
-            this.adjustChatContainerHeight();
         },
         dialogs() {
-            console.log('изменен! Новое сообщение!')
             this.adjustChatContainerHeight();
         },
     },
     mounted() {
-        function adjustTextareaHeight(textarea) {
-            textarea.style.height = "auto"; // Сначала сбросим высоту, чтобы текстареа автоматически увеличивалась при увеличении содержимого
-            textarea.style.height = textarea.scrollHeight + "px"; // Установим высоту textarea на основе содержимого и высоты прокрутки
-
-            if (textarea.style.height > `${100}px`) {
-                console.log('Превышение высоты текста арии!!!')
+        this.perfAuth();
+        socket.emit('feedRoom');
+        let id = document.cookie;
+        this.cookies = id;
+        socket.on('sendnewdualoginput', (data) => {
+            if (!this.roomingUserSocket) {
+                socket.emit('joinRoom', data._id);
+                this.roomingUserSocket = data._id;
             } else {
-                console.log('никак нет.')
+                socket.emit('leaveRoom', this.roomingUserSocket);
+                socket.emit('joinRoom', data._id);
+                this.roomingUserSocket = data._id;
             }
-        }
 
-        // Обработчик события при вводе текста или изменении содержимого textarea
-        // document.getElementById("autoHeightTextarea").addEventListener("input", function () {
-        //     adjustTextareaHeight(this);
-        // });
+            if (data.set_mark == 1 && data.user_one == this.token.userId || data.set_mark == 1 && data.user_two == this.token.userId) {
+                this.chats.push(data);
+                this.TakeDialog = data;
+                this.dialog = data;
+                // this.showChat = true;
 
-        // // Вызов функции при загрузке страницы для установки правильной высоты textarea, если текст уже присутствует
-        // adjustTextareaHeight(document.getElementById("autoHeightTextarea"));
-    },
-    async beforeRouteEnter(to, fromR, next) {
-        let token = document.cookie;
-        let response = await axios.post('/api/configuration/auth/examination/token/user', {
-            token: token
+                setTimeout(() => {
+                    this.convertBlockElementTo();
+                }, 100)
+            }
+        });
+
+        socket.on('newdialogFromInputSecond', (data) => {
+
+            this.statusChangePersonOnline(data.senderId);
+            if (!this.roomingUserSocket) {
+                socket.emit('joinRoom', data.chat._id);
+                this.roomingUserSocket = data.chat._id;
+            } else {
+                socket.emit('leaveRoom', this.roomingUserSocket);
+                socket.emit('joinRoom', data.chat._id);
+                this.roomingUserSocket = data.chat._id;
+            }
+            if (data.chat.set_mark == 1 && data.chat.time_two_user == this.token.userId) {
+                this.displayChatViewList = true;
+
+                this.chats.push(data);
+
+                // this.dialog = data;
+                // this.showChat = true;
+            }
         })
+        socket.on('foreverchatuserme', (data) => {
+            if (data.user_two == this.token.userId) {
+                this.chats.push(data);
+                // console.log("newChat", data)
+            }
+        });
+        socket.on('chatMessagerSearchInput', (data) => {
+            let users = data.users;
+            if (users) {
+                this.userIndex = users
+                this.displayChatViewList = false;
+            }
+            if (!this.searchuser) {
+                this.userIndex = null;
+                this.displayChatViewList = true;
+            }
+        })
+        this.getDialogs();
+    },
+    methods: {
+        async perfAuth() {
+            let token = document.cookie;
+            let response = await axios.post('/api/gettoken', {
+                token: token
+            })
+            if (response.data.status == 100) {
+                document.cookie = "cookieName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+                if (!document.cookie) {
+                    this.$router.push({
+                        name: 'fe'
+                    })
+                }
+            } else if (response.data.status == 105) {
+                this.token = response.data.decoded;
+                if (this.token.role >= 2) {
+                    this.admin = true;
+                }
+            }
+        },
+        scrollContinueGoContainer() {
+            let chatContainer = document.querySelector(".FeedContainer_boxMessageSender");
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight + 100;
+            }, 100);
+        },
+        async getDialogs() {
+            let token = document.cookie;
+            let response = await axios.post('/api/getdialogs', {
+                token: token
+            })
+            let chats = response.data;
+            if (chats) {
+                this.chats = chats;
+            }
+            socket.on('lastMessageSearch', (data) => {
+                let text = data.text;
+                let chatId = data.chatId;
+                let lastTime = data.lastTime;
+                for (let i = 0; i < this.chats.length; i++) {
+                    let chat = this.chats[i];
+                    if (chat._id == chatId) {
+                        chat.lastmessage = text
+                        chat.lastTime = lastTime;
+                    }
+                    if (chat._id == this.TakeDialog._id) {
+                        this.TakeDialog.messages.push({
+                            senderId: data.user,
+                            message: data.message,
+                            time: data.time,
+                        })
+                        this.scrollContinueGoContainer();
+                        // this.$refs.childComponentRef.scrollAytoContinueGoContainer();
+                    }
+                }
+            })
+        },
+        async updateDialogs(chatId, lastMessage) {
+            let chatIndex = this.chats.findIndex((chat) => chat.chatId === chatId);
+            if (chatIndex !== -1) {
+                this.chats[chatIndex].lastmessage = lastMessage;
+            }
+        },
+        showsChatUser(newValue) {
+            this.showChat = newValue;
+        },
+        sendDialogMessages(newValue) {
+            this.TakeDialog = newValue;
+            if (this.roomingUserSocket == null) {
+                socket.emit('joinRoom', this.TakeDialog._id);
+                this.roomingUserSocket = this.TakeDialog._id;
+            } else {
+                socket.emit('leaveRoom', this.roomingUserSocket);
+                socket.emit('joinRoom', this.TakeDialog._id);
+                this.roomingUserSocket = this.TakeDialog._id;
+            }
+            this.dialog = newValue;
 
-        if (response.status == 200) {
-            next(true)
-
-        } else {
-            next(false)
+            this.convertBlockElementTo();
+        },
+        async inputSearch() {
+            let text = this.searchuser;
+            text = text.trim();
+            socket.emit('searchFeedPerson', text);
+        },
+        async sendData(index) {
+            let user = this.userIndex[index];
+            let token = this.token;
+            this.searchuser = '';
+            this.displayChatViewList = true;
+            this.userIndex = null;
+            socket.emit('updateinputchat', {
+                idIUser: token,
+                id: user._id,
+                name: user.name,
+                surname: user.surname
+            });
+        },
+        updateDialogs(newValue) {
+            if (this.dialog.set_mark == 1) {
+                this.dialog.user_two = this.dialog.time_two_user;
+                this.dialog.set_mark == 0;
+            }
+            this.dialog.messages.push({
+                senderId: newValue.user,
+                message: newValue.message,
+                time: newValue.time,
+            });
+            this.TakeDialog.messages.push({
+                senderId: newValue.user,
+                message: newValue.message,
+                time: newValue.time,
+            });
+        },
+        goToAdminPanel() {
+            this.$router.push({
+                name: 'feedPanel'
+            })
+        },
+        statusChangePersonOnline(newValue) {
+            socket.emit('status_online', {
+                id_sender: newValue
+            });
+            socket.on(`status_online_${newValue}`, (data) => {
+                this.status_sender = data.status;
+                this.timeAgoHere = data.time;
+            })
+        },
+        convertBlockElementTo() {
+            this.showChat = true;
+            // document.getElementById("secondElementsPos3i6tion").style.display = "inline-block"
+            let element = document.getElementById("secondElementsPos3i6tion");
+            element.style.left = `${0}vw`
+        },
+        convertBlockElementBack() {
+            let element = document.getElementById("secondElementsPos3i6tion");
+            element.style.left = `${100}vw`;
         }
-    },
-    adjustTextareaHeight() {
-        let textarea = this.$refs.textarea;
-        textarea.style.height = 'auto';
-        textarea.style.height = `${textarea.scrollHeight}px`;
-        // console.log(textarea.scrollHeight);
-
-
-    },
+    }
 }
 </script>
 
 <template>
     <main>
-        <div v-if="displayChats" class="first_container_chats">
-            <div class="container_search_user">
-                <div class="container_information_search_user">
-                    <input placeholder="Найти людей.." type="text">
+        <div class="feedContainerElements">
+            <div class="first_container_chats">
+                <div class="container_search_user">
+                    <div class="container_information_search_user">
+                        <input @input="inputSearch()" v-model="searchuser" placeholder="Найти людей.." type="text">
+                    </div>
                 </div>
-            </div>
-            <div class="container_chat">
-                <!-- <div class="container_user_information">
+                <div class="container_chat">
+                    <!-- <div class="container_user_information"> -->
                     <ul>
-                        <li class="element_user_search">
+                        <li v-for="(item, index) in userIndex" @click="sendData(index)" class="element_user_search">{{
+                            item.fullusername }}</li>
+                        <!-- <li class="element_user_search">
                             <p>Ярослав Кочетов</p>
                         </li>
                         <li class="element_user_search">
@@ -93,195 +284,17 @@ export default {
                         </li>
                         <li class="element_user_search">
                             <p>Виктория Селютина</p>
-                        </li>
+                        </li> -->
                     </ul>
-                </div> -->
+                    <!-- </div> -->
 
-                <div class="container_chat_elements">
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="element_chat_send">
-                        <div class="container_information_chat_sender">
-                            <div class="avatar_chat_of_user_send">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                                    alt="">
-                            </div>
-                            <div class="container_name_sender_user_info">
-                                <p class="name_user_chat">Ярослав Кочетов</p>
-                                <p class="last_message_chat">Это последнее сооб..</p>
-                            </div>
-                        </div>
-                    </div>
+                    <DisplayChats v-if="displayChatViewList" @statusEventPerson="statusChangePersonOnline"
+                        @valueChanged="showsChatUser" @sendingDialogs="sendDialogMessages" :token="token" :chats="chats" />
                 </div>
             </div>
         </div>
-
-        <div v-if="displayDialogs" class="second_container_dialog_display">
-            <div class="container_navigation_back_and_information_sender">
-                <div class="container_navigation_button">
-                    <p>Назад</p>
-                </div>
-                <div class="container_information_sender">
-                    <div class="avatar_container_sender">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPo90FumZNXz_0Xj_JdzZ0SWEMpP55D05a-A&usqp=CAU"
-                            alt="">
-                    </div>
-                    <div class="information_container_text_sender_name">
-                        <p class="name_sender">Ярослав Кочетов</p>
-                        <p class="last_network_info_sender">Был(-а) в 17:29</p>
-                    </div>
-                </div>
-            </div>
-            <div class="container_message_dialog">
-                <div class="container_message">
-                    <div class="my_mes message_element">
-                        <p>Это первое сообщение в immeptor</p>
-                    </div>
-                    <div class="sender_mes message_element">
-                        <p>Это мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>ssdfsdfssdfsdfsdfsdfsdfsdfsdfdfЭто мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="sender_mes message_element">
-                        <p>Это первое сообщение в immeptor</p>
-                    </div>
-                    <div class="sender_mes message_element">
-                        <p>Это мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>ssdfsdfssdfsdfsdfsdfsdfsdfsdfdfЭто мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>Это первое сообщение в immeptor</p>
-                    </div>
-                    <div class="sender_mes message_element">
-                        <p>Это мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>ssdfsdfssdfsdfsdfsdfsdfsdfsdfdfЭто мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>ssdfsdfssdfsdfsdfsdfsdfsdfsdfdfЭто мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>Это первое сообщение в immeptor</p>
-                    </div>
-                    <div class="sender_mes message_element">
-                        <p>Это мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>ssdfsdfssdfsdfsdfsdfsdfsdfsdfdfЭто мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>Это первое сообщение в immeptor</p>
-                    </div>
-                    <div class="sender_mes message_element">
-                        <p>Это мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                    <div class="my_mes message_element">
-                        <p>ssdfsdfssdfsdfsdfsdfsdfsdfsdfdfЭто мое сообщение, не надо мне тут врать, тебе все понятно?</p>
-                    </div>
-                </div>
-
-                <form @submit="sendMessage" class="form_send_message">
-                    <div class="container_textarea">
-                        <textarea @input="adjustTextareaHeight" v-model="content" placeholder="Новое сообщение..." rows="1"
-                            id="autoHeightTextarea"></textarea>
-                    </div>
-                    <div class="container_button">
-                        <button type="submit">
-                            <img src="../../assets/img/sending.png" alt="">
-                        </button>
-                    </div>
-                </form>
-
-            </div>
-            <div>
-
-            </div>
+        <div class="feedContainerElements container--colSellPos_LowVeightChant" id="secondElementsPos3i6tion">
+            <ShowChat v-if="showChat" :token="token" :dialog="TakeDialog" @backToMenuChat="convertBlockElementBack" ref="childComponentRef" v-bind:scrollAytoContinueGoContainer="scrollContinueGoContainer"/>
         </div>
         <UiMenuBottom />
     </main>
@@ -296,12 +309,25 @@ main {
     background-color: #E0BEFF;
     width: 100vw;
     height: 100vh;
+    display: flex;
     position: relative;
+}
+
+body.keyboard {
+    height: calc(100% + 500px);
+    /* add padding for keyboard */
+}
+
+.feedContainerElements {
+    background-color: #E0BEFF;
+    width: 100vw;
+    height: 100vh;
+
 }
 
 .container_search_user {
     width: 100%;
-    height: 8%;
+    height: 9%;
     background-color: #C97E7E;
     border-bottom: 0.15px solid rgb(134, 48, 48);
     display: flex;
@@ -325,7 +351,7 @@ main {
 }
 
 .container_information_search_user input {
-    font-size: 15px;
+    font-size: 17px;
     width: 97%;
     background-color: aliceblue;
     border: none;
@@ -333,25 +359,30 @@ main {
 }
 
 .container_chat {
-    height: 82%;
+    height: 81%;
     position: relative;
 }
 
 .container_user_information {
-    width: 100%;
-    height: auto;
+
+    z-index: 0;
+
     /* background-color: black; */
+
 }
 
-.container_user_information ul {
+.container_chat ul {
     list-style-type: none;
     padding: 0;
     width: 100%;
-    height: auto;
+    /* height: 100%; */
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    /* width: 100%; */
+    /* height: 100%; */
+    position: absolute;
 }
 
 li {
@@ -366,6 +397,7 @@ li {
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+    z-index: 1;
 }
 
 li:last-child {
@@ -384,15 +416,16 @@ li:hover {
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
+    /* filter: blur(1rem); */
 }
 
 .element_chat_send {
     width: 100%;
-    height: 20%;
+    /* height: 20%; */
     display: flex;
     align-items: center;
     justify-content: center;
-
+    transition: all 0.2s;
     border-bottom: 0.001px solid #dd7c7c;
 }
 
@@ -458,267 +491,281 @@ li:hover {
 }
 
 /* Второй компонент ОТображающий диалог (откр) */
-
-.second_container_dialog_display {
-    width: 100%;
-    height: 100%;
-}
-
-.container_navigation_back_and_information_sender {
-    width: 100%;
-    height: 10%;
-    background-color: #FFCFC3;
-    border-radius: 0 0 8px 8px;
+/* Style of container User's data */
+#secondElementsPos3i6tion {
+    position: absolute;
+    left: 100vw;
+    /* left: 0; */
+    z-index: 4;
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-left: 10px;
-}
-
-.container_navigation_button {
-    width: 25%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: gray;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: normal;
-    height: 100%;
-    transition: all 0.1s;
-}
-
-.container_navigation_button:hover {
-    color: rgb(26, 26, 26);
-    cursor: pointer;
+    flex-direction: column;
+    transition: all 0.15s;
+    /* align-items: center; */
 }
 
 .container_information_sender {
-    width: 65%;
-    height: 90%;
+    width: 100%;
+    height: 10%;
+    background-color: #FFCFC3;
     display: flex;
-    gap: 7px;
-    align-items: center;
+    gap: 10px;
+    border-radius: 0 0 8px 8px;
 }
 
-.avatar_container_sender {
+.elementcontainerFirst_menu_buttonBack {
+    width: 140px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+
 }
 
-.avatar_container_sender img {
-    border-radius: 10px;
-    width: 100%;
-    height: 100%;
-}
-
-.information_container_text_sender_name {
-    height: 100%;
-    position: relative;
-    flex-grow: 1;
-}
-
-.name_sender {
-    color: rgb(105, 54, 54);
-    font-family: 'Inria Sans', sans-serif;
-    font-size: 15px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: normal;
-    position: absolute;
-    top: 4px;
-}
-
-.last_network_info_sender {
-    color: #959494;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
+.elementcontainerFirst_menu_buttonBack p {
+    color: #997272;
+    padding: 17px 30px;
+    font-family: 'Inter';
+    font-size: 15.5px;
     font-style: normal;
     font-weight: 500;
     line-height: normal;
-    position: absolute;
-    bottom: 4px;
+    border-radius: 5px;
+    background: #E8B4B4;
+    transition: all 0.3s;
 }
 
-.container_message_dialog {
-    width: 100%;
-    height: 80%;
+.elementcontainerFirst_menu_buttonBack p:hover {
+    background: #c59999;
+    color: #816060;
+}
+
+.elementcontainerFirst_menu {
+    height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-direction: column;
 }
 
-.container_message {
-    padding-top: 8px;
-    width: 94%;
-    height: 85%;
+.feedContElemInfoSender {
+    height: 80%;
+    display: flex;
+    gap: 7px;
+}
+
+.container_imageAvatar_theUser {
+    height: 100%;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.container_imageAvatar_theUser img {
+    height: 100%;
+    border-radius: 10px;
+}
+
+.container_textInformation_dataSender {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 5px;
+}
+
+.nameUserSenderElementUI {
+    /* color: #000; */
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: bold;
+    color: #553939;
+    font-size: 18px;
+    font-style: normal;
+    /* font-weight: 400; */
+    line-height: normal;
+}
+
+.dateUserSenderElementUI {
+    color: #959494;
+    font-family: "Inter";
+    font-size: 15.5px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+/* Style for second boxChatMessage */
+.FeedContainer_boxMessageSender {
+    width: 100%;
+    height: 82%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow-y: scroll;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.container_box_message {
+    width: 90%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    overflow-y: scroll;
-    justify-content: center;
+
 }
 
-.container_message::-webkit-scrollbar {
-    width: 6px;
-    background-color: #f9f9fd;
-}
-
-.container_message::-webkit-scrollbar-track {
-    background-color: rgb(224, 190, 255);
-}
-
-.message_element {
-    width: 100%;
-}
-
-.sender_mes p {
-    background-color: #FE83B7;
-    border-radius: 10px 10px 10px 0;
-    float: left;
-}
-
-.message_element:first-child {
-    margin-top: 15px;
-}
-
-.message_element:last-child {
-    margin-bottom: 15px;
-}
-
-.my_mes p {
-    background-color: #ffea8b;
+.my_message {
     float: right;
-    border-radius: 10px 10px 0 10px;
+    max-width: 80%;
+    background-color: #ffea8b;
+    padding: 10px 10px 20px 10px;
+    margin-bottom: 5px;
+    border-radius: 30px 30px 0 30px;
+    position: relative;
+    white-space: pre-line;
 }
 
-.message_element p {
-    padding: 10px 15px;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
+.sender_message {
+    float: left;
+    max-width: 80%;
+    background-color: #FFABCE;
+    padding: 10px 10px 20px 10px;
+    border-radius: 30px 30px 30px 0;
+    margin-bottom: 5px;
+    white-space: pre-line;
+    /* padding: 10px; */
+    position: relative;
+}
+
+.text_message {
+    width: 86%;
+    padding-bottom: 2px;
+}
+
+.element_chatMessage {
+    width: 100%;
+    word-wrap: break-word;
+
+    color: #000;
+    font-family: "Inter";
+    font-size: 12px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
-    max-width: 60%;
+    font-size: 15px;
+    font-family: 'PT Sans', sans-serif;
 }
 
-.form_send_message {
-    min-height: 11.5%;
-    height: auto;
+.container_textMessage--cell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.element_chatMessage:first-child {
+    padding-top: 10px;
+}
+
+.element_chatMessage:last-child {
+    padding-bottom: 10px;
+}
+
+/* style for inputSendTextOfMessage */
+.contaner_input_textMessage {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    position: absolute;
+    bottom: 5px;
+    min-height: 8%;
+    height: fit-content;
+}
+
+.container_sendText_Message {
+    display: flex;
+    position: relative;
+    /* left: 0; */
+
+    /* min-height: 100%; */
+    /* max-height: auto; */
+    max-height: auto;
     width: 98%;
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: start;
+    /* gap: 20px; */
     -webkit-box-shadow: 4px 11px 31px 12px rgba(34, 60, 80, 0.2);
     -moz-box-shadow: 4px 11px 31px 12px rgba(34, 60, 80, 0.2);
     box-shadow: 4px 11px 31px 12px rgba(34, 60, 80, 0.2);
     background-color: #ffffff;
     border-radius: 20px;
-
-
 }
 
-.form_container {
-    width: 95%;
-    height: 15%;
-    max-height: auto;
-    /* background-color: black; */
+.containerIconsSend--cell {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    flex-grow: 1;
 }
 
-textarea {
-    width: 100%;
+#autoHeightTextarea {
+    /* text-align: center; */
+    /* position: absolute;
+    top: 0; */
+
+    /* bottom: 0; */
     background-color: #ffffff;
     border: none;
     padding: 2px 0 0 0;
-    margin: 8px 0px;
+    margin: 8px 15px;
     font-size: 15px;
-
-    word-wrap: break-word;
-    height: auto;
+    width: 100%;
+    /* min-height: 15px; */
+    /* word-wrap: break-word; */
+    height: 100%;
+    max-height: 150px;
     resize: none;
     font-family: 'M PLUS Rounded 1c', sans-serif;
-    overflow-y: hidden;
+    /* overflow-y: hidden; */
 }
 
-textarea:focus-visible {
-    border: none;
+#autoHeightTextarea:focus-visible {
     outline: none;
 }
 
-.container_textarea {
+.container_textMessageInput__UI {
     width: 85%;
-    height: 100%;
-    /* background-color: black; */
+    height: fit-content;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.container_button {
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+.time_sender--cellOut {
+    position: absolute;
+    bottom: 8px;
+    right: 20px;
 
-.container_button button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #fff;
-    outline: none;
-    border: none;
-}
-
-.ui_navigation_mobile {
-    background-color: #DC3545;
-    width: 100%;
-    height: 10%;
-    position: fixed;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-
-}
-
-.navigation_element_ui {
-    width: 40%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 5px;
-    opacity: 20%;
-    transition: all 0.05s;
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 14px;
+    color: #666666;
+    font-family: "Inter";
+    font-size: 13.5px;
     font-style: normal;
-    font-weight: 400;
+    font-weight: 500;
     line-height: normal;
 }
 
-.navigation_element_ui img {
-    width: 25px;
-    height: 25px;
-}
+.time_OfMeMessage--cellOut {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
 
-.navigation_element_ui:hover {
-    opacity: 100%;
-    cursor: pointer;
-}
-
-.active {
-    opacity: 100%;
+    color: #666666;
+    font-family: "Inter";
+    font-size: 13.5px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
 </style>

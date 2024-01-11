@@ -1,5 +1,6 @@
 <script>
-import SettingsPage from '../render/dekstop/SettingsPage.vue';
+import SettingsDekstop from '../render/dekstop/SettingsPage.vue';
+import SettingsMobile from '../render/mobile/SettingsAccountPage.vue';
 
 import socket from '../socket'
 
@@ -21,13 +22,14 @@ export default {
         }
     },
     components: {
-        SettingsPage,
+        SettingsDekstop,
+        SettingsMobile
     },
     mounted() {
         let userAgent = navigator.userAgent.toLowerCase();
         if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
             // console.log('мобила')
-            this.mobile = false;
+            this.mobile = true;
         } else {
             // console.log('пк')
             this.dekstop = true;
@@ -37,7 +39,8 @@ export default {
 </script>
 
 <template>
-    <SettingsPage />
+    <SettingsDekstop v-if="dekstop" />
+    <SettingsMobile v-if="mobile" />
 </template>
 
 <style scoped></style>

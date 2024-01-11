@@ -427,6 +427,9 @@ io.on('connection', (socket) => {
                 chatId: chatId,
                 text: lastMes,
                 lastTime: timen,
+                user: userId,
+                message: message,
+                time: timen,
             });
         }
     })
@@ -959,6 +962,34 @@ app.post('/api/gettoken', async function (req, res) {
                 res.status(200).json({ status: 100 })
             } else {
                 res.status(200).json({ status: 105, decoded: decoded })
+            }
+        } else {
+            console.log('Пользователь не найден по токену!')
+        }
+    } else {
+        console.log('Токен не найден или не раскодирован!')
+    }
+})
+
+app.post('/api/get/usermodel/information/imm/ms/dul', async function (req, res) {
+    let secretKey = 'dev_jwt';
+    let decoded = '';
+    let tokenWithPrefix = req.body.token;
+    try {
+        let token = tokenWithPrefix.replace('Bearer ', '');
+        let tokening = token.replace('cookieName=', '');
+        decoded = jwt.verify(tokening, secretKey);
+    } catch (e) {
+        console.log(e);
+    }
+    if (decoded) {
+        let user = await User.findOne({ _id: decoded.userId });
+        if (user) {
+            if (user.froze || user.blockedAccount) {
+                console.log('Аккаунт ограничен в правах!')
+                res.status(200).json({ status: 100 })
+            } else {
+                res.status(200).json({ status: 105, user: user })
             }
         } else {
             console.log('Пользователь не найден по токену!')

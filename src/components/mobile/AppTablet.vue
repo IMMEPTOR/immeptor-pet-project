@@ -104,13 +104,14 @@ export default {
 }
 
 .table_container {
-    height: 500px;
+    min-height: 300px;
     width: 750px;
     /* background-color: black; */
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: space-around;
+    gap: 20px;
 }
 
 .first_container_table {
@@ -174,7 +175,7 @@ export default {
 }
 
 .container_image_element_and_text_description {
-    width: 93%;
+    width: 83%;
     min-height: 30%;
     height: fit-content;
     background-color: #FDF8F8;
@@ -184,8 +185,8 @@ export default {
 }
 
 .image_posts_public {
-    width: 350px;
-    height: 200px;
+    width: 150px;
+    height: 100px;
     display: table-cell;
     float: left;
     margin: 0;
@@ -207,8 +208,8 @@ export default {
     }
 
     100% {
-        bottom: 30px;
-        right: 30px;
+        bottom: 10px;
+        right: 10px;
         opacity: 1;
     }
 }

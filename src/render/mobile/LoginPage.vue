@@ -1,5 +1,15 @@
 <script>
-import axios from 'axios';
+import axios from "axios";
+import dayjs from "dayjs";
+import socket from '../../socket'
+
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import ErrorText from '../../components/mobile/AppErrorText.vue';
 export default {
     data() {
         return {
@@ -8,10 +18,22 @@ export default {
             setBlocked: false,
             setVoin: true,
             setFroze: false,
+            error: null,
         }
     },
+    components: {
+        ErrorText,
+    },
     mounted() {
+        let oneElem = document.querySelector(".inputElement__email");
+        let twoElem = document.querySelector(".inputElement__email");
+        oneElem.addEventListener("input", () => {
+            this.error = "";
+        })
 
+        twoElem.addEventListener("input", () => {
+            this.error = "";
+        })
     },
     methods: {
         goToFeedPage() {
@@ -29,17 +51,16 @@ export default {
                 email: this.email,
                 password: this.password
             })
-
             let date = response.data;
 
             if (date.status == 398) {
-                this.setVoin = false;
-                this.setBlocked = true;
-                console.log('Аккаунт заблокирован!')
+                // this.setVoin = false;
+                // this.setBlocked = true;
+                this.error = "Аккаунт заблокирован!"
             } else if (date.status == 129) {
-                this.setVoin = false;
-                this.setFroze = true;
-                console.log('Аккаунт заморожен!')
+                // this.setVoin = false;
+                // this.setFroze = true;
+                this.error = "Аккаунт заморожен"
             } else if (date.token) {
                 let time = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                 // time = time.toUTCString();
@@ -47,6 +68,10 @@ export default {
                 this.$router.push({
                     name: 'feed'
                 })
+            } else {
+                this.error = "Неверный логин или пароль"
+                this.email = "";
+                this.password = "";
             }
 
             // if (token) {
@@ -67,36 +92,43 @@ export default {
 </script>
 
 <template>
+    <header>
+        <div class="container_logo_information">
+            <p>IMMEPTOR</p>
+        </div>
+        <div @click="goToFeedPage" class="button_container_login">
+            <p>На главную</p>
+        </div>
+    </header>
     <main>
-        <form @submit="toInLogin">
-            <div class="feed_info_title_form_container">
-                <div @click="goToFeedPage" class="back_to_page_icon">
-                    <img src="../../assets/img/backMobilenav.png" alt="">
+        <form @submit="toInLogin" action="">
+            <div class="name_block_formTitle">
+                <p>Вход</p>
+                <ErrorText :text="error" />
+            </div>
+            <div class="container_changeData--to_end_sendSave">
+                <div class="container_data_inputChange__late">
+                    <div class="elem_inputFormchangeFromInformation--login">
+                        <input autocomplete="off" class="inputElement__email" v-model="email" placeholder="Логин:" type="email">
+                    </div>
+                    <div class="elem_inputFormchangeFromInformation--login">
+                        <input autocomplete="off" class="inputElement__pass" v-model="password" placeholder="Пароль:" type="password">
+                    </div>
                 </div>
-                <div>
-                    <p>Вход</p>
+                <div class="containerChecked__cell-downSend">
+                    <label for="">
+                        Запомнить на этом устройстве
+                        <input disabled checked class="inputCheckbox__input--cell" type="checkbox">
+                    </label>
                 </div>
             </div>
-            <div class="input_text_load_and-SEND_BUT_CONYAINER">
-                <div class="container_input">
-                    <div class="element_input">
-                        <input name="email" v-model="email" type="email" required placeholder="Email:" autocomplete="off"
-                            id="login">
-                    </div>
-                    <div class="element_input">
-                        <input name="password" v-model="password" type="password" required placeholder="Пароль:"
-                            autocomplete="off" id="pass">
-                    </div>
+            <div class="container__other-confirm_cell">
+                <div class="container_descriptionEnd_tosend--cell">
+                    <p>Нажимая «Войти», вы принимаете <a href="/privacy" target="_blank">политику конфиденциальности</a>.
+                    </p>
                 </div>
-                <div>
-                    <div class="verify_policy">
-                        <p>Нажимая «Войти», вы принимаете <a href="/privacy">политику
-                                конфиденциальности</a>.</p>
-                    </div>
-                </div>
-                <div class="container_button_send_date_from_form">
-                    <button type="submit">Войти</button>
-                    <button type="button">Зарегестрироваться</button>
+                <div class="container_buttonArchive_send--cell">
+                    <button @click="toInLogin" type="submit">Войти</button>
                 </div>
             </div>
         </form>
@@ -104,144 +136,233 @@ export default {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans&family=Kanit&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
+
+
 * {
     margin: 0;
-    padding: 0;
 }
 
-
-main {
-    background-color: rgb(224, 190, 255);
-    height: 100vh;
+header {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-form {
-    width: 80%;
-    height: 65%;
-    background-color: #FF9C9C;
-    border-radius: 20px;
-    position: relative;
-}
-
-.feed_info_title_form_container {
-    height: 12%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #000;
-    font-family: 'Inter', sans-serif;
-    font-size: 25px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-}
-
-.back_to_page_icon {
-    position: absolute;
-    left: -5px;
-    top: -3px;
-    opacity: 15%;
-    transition: all 0.2s;
-}
-
-.back_to_page_icon img {
-    width: 55px;
+    background-color: #000;
     height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: relative;
+    z-index: 2;
+    font-family: 'Fira Sans', sans-serif;
 }
 
-.back_to_page_icon:hover {
-    position: absolute;
-    left: -10px;
-    top: -3px;
-    opacity: 35%;
+.container_logo_information {
+    width: 35%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container_logo_information p {
+    color: rgb(255, 255, 255);
+    font-size: 26px;
+    /* line-height: 15px; */
+}
+
+.button_container_login {
+    width: auto;
+    height: 100%;
+    /* background-color: yellow; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button_container_login p {
+    background-color: rgb(255, 255, 255);
+    padding: 5px 30px;
+    border-radius: 5px;
+    transition: all 0.1s;
+    font-size: 15px;
+}
+
+.button_container_login p:hover {
+    background-color: rgb(182, 182, 182);
     cursor: pointer;
 }
 
-.input_text_load_and-SEND_BUT_CONYAINER {
-    width: 100%;
-    height: 88%;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    flex-direction: column;
-    /* background-color: #000000; */
-}
-
-.container_input {
-    width: 85%;
-    height: 45%;
-    display: flex;
-    justify-content: space-around;
-    flex-direction: column;
-    align-items: center;
-}
-
-.element_input {
-    width: 100%;
-    height: 30%;
-    background: #D7D7D7;
+main {
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
 }
 
-.element_input input {
-    width: 90%;
-    height: 60%;
-    background: #D7D7D7;
-    outline: none;
-    border: none;
+a {
+    color: rgb(0, 145, 255);
+}
 
-    color: #000000;
-    font-family: 'Inter', sans-serif;
+/*  */
+
+form {
+    width: 75%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.name_block_formTitle {
+    color: #000;
+    font-family: "Inter";
+    font-size: 29px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.container_changeData--to_end_sendSave {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 17px;
+}
+
+.container_data_inputChange__late {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+.elem_inputFormchangeFromInformation--login {
+    border-radius: 10px;
+    background: #F0F0F0;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.elem_inputFormchangeFromInformation--login input {
+    background: none;
+    border: none;
+    outline: none;
+    width: 90%;
+    height: 90%;
+
+    color: #1f1b1b;
+    font-family: "Inter";
     font-size: 15px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
 }
 
-.container_button_send_date_from_form {
-    width: 100%;
-    height: 45%;
-    /* background-color: yellow; */
+.containerChecked__cell-downSend {
     display: flex;
+    justify-content: content;
+    width: 100%;
+    height: auto;
+}
+
+.containerChecked__cell-downSend label {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    text-align: center;
+    color: #000;
+    font-family: "Inter";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    height: 100%;
+    gap: 10px;
+}
+
+.inputCheckbox__input--cell {
+    transform: scale(1.6);
+    opacity: 0.9;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: 1.5px;
+}
+
+.container__other-confirm_cell {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
     gap: 20px;
 }
 
-button {
-    border: none;
-    color: white;
-    background-color: black;
-    padding: 20px 40px;
-    /* width: 122px; */
-    border-radius: 99em;
-    transition: all 0.15s;
-}
+.container_descriptionEnd_tosend--cell {
+    width: 90%;
+    height: auto;
 
-button:hover {
-    box-shadow: 0px 3px 2px 1px rgba(11, 11, 12, 0.2);
-    color: rgb(187, 184, 184);
-    cursor: pointer;
-}
-
-.verify_policy {
-    width: 300px;
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 13px;
+    color: #000;
     text-align: center;
+    font-family: "Inter";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
 }
 
-.verify_policy a {
-    color: rgb(0, 140, 255);
+.container_buttonArchive_send--cell {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container_buttonArchive_send--cell button {
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    background: #F00;
+
+    width: 100px;
+    height: 50px;
+
+    color: #FFF;
+    font-family: "Inter";
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+
+    -webkit-box-shadow: 0px 0px 18px 0px rgba(34, 60, 80, 0.2);
+    -moz-box-shadow: 0px 0px 18px 0px rgba(34, 60, 80, 0.2);
+    box-shadow: 0px 0px 18px 0px rgba(34, 60, 80, 0.2);
 }
 </style>

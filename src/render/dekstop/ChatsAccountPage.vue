@@ -57,6 +57,7 @@ export default {
         socket.emit('feedRoom');
         let id = document.cookie;
         this.cookies = id;
+        
         socket.on('sendnewdualoginput', (data) => {
             if (!this.roomingUserSocket) {
                 socket.emit('joinRoom', data._id);

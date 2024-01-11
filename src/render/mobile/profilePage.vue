@@ -76,19 +76,11 @@ export default {
 
 
         },
-        goToAdminPanel() {
+        goToSettings() {
             this.$router.push({
-                name: 'feedPanel'
+                name: 'settings'
             })
         },
-        deleredJWtTokenAuth() {
-            document.cookie = "cookieName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
-            if (!document.cookie) {
-                this.$router.push({
-                    name: 'fe'
-                })
-            }
-        }
     },
 }
 </script>
@@ -103,7 +95,9 @@ export default {
                 </div>
                 <div class="container_name_and_surname">
                     <p class="information_user"> {{name}} {{surname}}</p>
-                    <p @click="deleredJWtTokenAuth()" class="button_exit">Выйти</p>
+                    <div @click="goToSettings()" class="ui_button_action_to_settings">
+                        <img class="button_exit" src="../../assets/img/settingsMobile.png">
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,10 +145,11 @@ main {
     flex-grow: 1;
     height: 100%;
     display: flex;
-    justify-content: space-around;
+    /* justify-content: space-around; */
     align-items: start;
     flex-direction: column;
-    gap: 60px;
+    gap: 40px;
+    padding-top: 12px;
 }
 
 .information_user {
@@ -175,17 +170,26 @@ main {
     gap: 15px;
 }
 
-.button_exit {
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    background-color: rgb(255, 255, 255);
-    padding: 5px 15px;
-    border-radius: 5px;
+.ui_button_action_to_settings {
+    width: 48px;
+    height: 48px;
+    background-color: #F8B3B3;
+    border-radius: 8px;
     transition: all 0.1s;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ui_button_action_to_settings img {
+    width: 32px;
+    height: 32px;
+    opacity: 40%;
 }
 
-.button_exit:hover {
-    background-color: rgb(201, 201, 201);
-    cursor: pointer;
+.ui_button_action_to_settings:hover {
+    background-color: rgba(219, 137, 137, 0.796)
 }
+
+
 </style>
